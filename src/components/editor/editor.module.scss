@@ -1,0 +1,65 @@
+.editor {
+    --width: 20ch;
+
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background-color: whitesmoke;
+    width: 100%;
+    width: var(--width);
+    margin: 0 auto;
+
+    .overlay,
+    textarea {
+        line-height: 48px;
+        width: var(--width);
+    }
+
+    .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        pointer-events: none; // Allow clicks to pass through to textarea
+        z-index: 1;
+
+        span {
+            &.fade {
+                color: gray;
+            }
+
+            &.current {
+                color: red;
+            }
+        }
+    }
+
+    textarea {
+        position: relative;
+        font-family: inherit;
+        font-size: inherit;
+        background: none;
+        color: transparent;
+        resize: none;
+        outline: none;
+        overflow: hidden;
+        caret-color: black; // The caret (cursor) will still be visible
+        z-index: 2;
+
+        border: none;
+        padding: 0;
+    }
+}
+
+//
+.bar {
+    position: fixed;
+    width: 100vw;
+    height: 2px;
+    background-color: red;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
