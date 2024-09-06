@@ -20,11 +20,11 @@
         white-space: pre-wrap;
         word-wrap: break-word;
         pointer-events: none;
-        color: gray;
+        color: var(--muted);
         z-index: 1;
 
         span {
-            color: black;
+            color: var(--color);
         }
     }
 
@@ -38,7 +38,7 @@
         outline: none;
         border: none;
         padding: 0;
-        caret-color: black;
+        caret-color: var(--color);
         overflow: hidden;
         z-index: 2;
 

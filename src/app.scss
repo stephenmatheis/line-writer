@@ -1,7 +1,12 @@
 :root {
     --font-family: monospace;
-    --color: black;
-    --background-color: white;
+    // --color: black;
+    // --muted: #757575;
+    // --background-color: white;
+    --color: #242424;
+    --muted: #bbb;
+    --muted-dark: #9f9f9f;
+    --background-color: #ffffff;
 
     font-family: var(--font-family);
     color: var(--color);
