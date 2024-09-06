@@ -36,8 +36,12 @@ export function Editor() {
         const target = event.target as HTMLTextAreaElement;
         const start = target.selectionStart;
         const end = target.selectionEnd;
+        const newContent =
+            content.slice(0, start) + plainText + content.slice(end);
 
-        setContent(content.slice(0, start) + plainText + content.slice(end));
+        localStorage.setItem('note', newContent);
+
+        setContent(newContent);
 
         setTimeout(() => {
             target.setSelectionRange(
@@ -100,11 +104,24 @@ export function Editor() {
                 textAreaRef.current.value.length,
                 textAreaRef.current.value.length
             );
+
+            resize(textAreaRef.current);
+
+            scrollBodyToBottom();
         }, 0);
 
         window.addEventListener('click', focus);
 
-        function focus() {
+        function focus(event: Event) {
+            if (
+                textAreaRef.current &&
+                !textAreaRef.current.contains(event.target as Node)
+            ) {
+                if (window.getSelection) {
+                    window.getSelection()?.removeAllRanges();
+                }
+            }
+
             textAreaRef.current?.focus();
         }
 

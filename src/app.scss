@@ -12,8 +12,8 @@
     box-sizing: border-box;
 
     &::selection {
-        color: var(--background-color);
-        background-color: var(--color);
+        color: var(--color);
+        background-color: #eee;
     }
 }
 
