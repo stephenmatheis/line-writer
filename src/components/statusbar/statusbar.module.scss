@@ -1,0 +1,22 @@
+.statusbar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4ch;
+    width: 100%;
+    padding: 1rem;
+    font-size: 11px;
+
+    .item {
+        color: dimgray;
+
+        span {
+            display: inline-block;
+            min-width: 8ch;
+        }
+    }
+}

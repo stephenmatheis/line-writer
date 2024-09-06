@@ -10,25 +10,16 @@
 
 * {
     box-sizing: border-box;
+
+    &::selection {
+        color: var(--background-color);
+        background-color: var(--color);
+    }
 }
 
 body {
-    // display: flex;
-    // flex-direction: column;
-    // align-items: center;
-    // justify-content: center;
-    // min-height: 100dvh;
-    // width: 100vw;
-    // padding: 4em 0;
-    // margin: 0;
-    // overflow-y: auto;
-
     margin: 0;
-    /* Keep the text input line vertically centered */
-
-    // scroll-padding-top: calc(50dvh);
-    // scroll-padding-bottom: calc(50dvh);
-
     padding-top: calc(50dvh - 24px);
     padding-bottom: calc(50dvh - 24px);
+    font-size: 16px;
 }

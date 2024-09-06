@@ -6,16 +6,23 @@ import {
     useState,
     useRef,
     useEffect,
+    Fragment,
 } from 'react';
+import { StatusBar } from '@/components/statusbar';
 import styles from './editor.module.scss';
 
+const chars = 70;
+const width = `${chars}ch`;
+
 export function Editor() {
-    const [content, setContent] = useState('');
+    const [content, setContent] = useState(localStorage.getItem('note') || '');
     const [cursorPos, setCursorPos] = useState(0);
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
     function handleInput(event: ChangeEvent<HTMLTextAreaElement>) {
         const newText = event.target.value;
+
+        localStorage.setItem('note', newText);
 
         setContent(newText);
         setCursorPos(event.target.selectionStart || 0);
@@ -45,28 +52,11 @@ export function Editor() {
     }
 
     function resize(node: HTMLElement) {
-        // console.log('resize:', node.scrollHeight);
-
         node.style.height = 'auto';
         node.style.height = `${node.scrollHeight}px`;
-        // node.style.height = `${
-        //     node.scrollHeight > 48 * 2
-        //         ? node.scrollHeight + 48
-        //         : node.scrollHeight
-        // }px`;
-    }
-
-    function keepTypingLineCentered() {
-        // console.log('Center line:', document.documentElement.scrollHeight);
-        // console.log('scroll off');
-
-        return;
-
-        scrollBodyToBottom();
     }
 
     function highlightText(text: string) {
-        // Regular expression to split text by sentence endings (period, exclamation, question mark)
         const sentenceRegex = /([^.!?]+[.!?])/g;
         const sentences = text.match(sentenceRegex) || [];
         const lastSentence = text.slice(sentences.join('').length);
@@ -74,13 +64,9 @@ export function Editor() {
         return (
             <>
                 {sentences.map((sentence, index) => (
-                    <span key={index} className={styles.fade}>
-                        {sentence}
-                    </span>
+                    <Fragment key={index}>{sentence}</Fragment>
                 ))}
-                {lastSentence && (
-                    <span className={styles.current}>{lastSentence}</span>
-                )}
+                {lastSentence && <span>{lastSentence}</span>}
             </>
         );
     }
@@ -88,11 +74,9 @@ export function Editor() {
     function scrollBodyToBottom() {
         window.scrollTo({
             top: document.documentElement.scrollHeight,
-            // behavior: 'smooth',
         });
     }
 
-    // Maintain cursor position on textarea focus
     useEffect(() => {
         if (textAreaRef.current) {
             textAreaRef.current.selectionStart = cursorPos;
@@ -101,46 +85,56 @@ export function Editor() {
     }, [cursorPos]);
 
     useEffect(() => {
-        // console.log('chars:', content.length);
-
-        if (content.length < 21) {
+        if (content.length <= chars) {
             return;
         }
 
-        window.scrollTo({
-            top: document.documentElement.scrollHeight,
-        });
-
-        // if (content.length % 20 > 0) {
-        //     console.log('new line');
-
-        //     window.scrollTo({
-        //         top: document.documentElement.scrollHeight,
-        //     });
-        // }
+        scrollBodyToBottom();
     }, [content]);
 
-    return (
-        <div className={styles.editor}>
-            <div
-                className={styles.overlay}
-                onClick={() => textAreaRef.current?.focus()}
-                aria-hidden="true"
-            >
-                {highlightText(content)}
-            </div>
-            <textarea
-                ref={textAreaRef}
-                value={content}
-                onChange={handleInput}
-                onPaste={handlePaste}
-                onInput={keepTypingLineCentered}
-                autoFocus
-                rows={1}
-            />
+    useEffect(() => {
+        setTimeout(() => {
+            if (!textAreaRef.current) return;
 
-            <div className={styles.bar} />
-        </div>
+            textAreaRef.current.setSelectionRange(
+                textAreaRef.current.value.length,
+                textAreaRef.current.value.length
+            );
+        }, 0);
+
+        window.addEventListener('click', focus);
+
+        function focus() {
+            textAreaRef.current?.focus();
+        }
+
+        return () => window.removeEventListener('click', focus);
+    }, []);
+
+    return (
+        <>
+            <div className={styles.editor} style={{ width }}>
+                <div
+                    className={styles.overlay}
+                    style={{ width }}
+                    aria-hidden="true"
+                >
+                    {highlightText(content)}
+                </div>
+                <textarea
+                    ref={textAreaRef}
+                    style={{ width }}
+                    value={content}
+                    onChange={handleInput}
+                    onPaste={handlePaste}
+                    autoFocus
+                    rows={1}
+                />
+
+                <div className={styles.bar} />
+            </div>
+            <StatusBar content={content} />
+        </>
     );
 }
 

@@ -1,18 +1,15 @@
 .editor {
-    --width: 20ch;
-
     position: relative;
     display: flex;
     flex-direction: column;
-    background-color: whitesmoke;
     width: 100%;
-    width: var(--width);
     margin: 0 auto;
+
+    // background-color: #ff000030;
 
     .overlay,
     textarea {
         line-height: 48px;
-        width: var(--width);
     }
 
     .overlay {
@@ -22,17 +19,12 @@
         width: 100%;
         white-space: pre-wrap;
         word-wrap: break-word;
-        pointer-events: none; // Allow clicks to pass through to textarea
+        pointer-events: none;
+        color: gray;
         z-index: 1;
 
         span {
-            &.fade {
-                color: gray;
-            }
-
-            &.current {
-                color: red;
-            }
+            color: black;
         }
     }
 
@@ -44,17 +36,19 @@
         color: transparent;
         resize: none;
         outline: none;
-        overflow: hidden;
-        caret-color: black; // The caret (cursor) will still be visible
-        z-index: 2;
-
         border: none;
         padding: 0;
+        caret-color: black;
+        overflow: hidden;
+        z-index: 2;
+
+        white-space: pre-wrap;
     }
 }
 
-//
 .bar {
+    display: none;
+
     position: fixed;
     width: 100vw;
     height: 2px;
