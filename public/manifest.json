@@ -1,0 +1,17 @@
+{
+    "name": "Line Writer",
+    "version": "0.1.0",
+    "manifest_version": 3,
+    "chrome_url_overrides": {
+        "newtab": "./index.html"
+    },
+    "permissions": [
+        "storage"
+    ],
+    "icons": {
+        "16": "./favicons/favicon-16x16.png",
+        "32": "./favicons/favicon-32x32.png",
+        "48": "./favicons/favicon-48x48.png",
+        "128": "./favicons/favicon-128x128.png"
+    }
+}
