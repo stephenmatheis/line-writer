@@ -1,7 +1,7 @@
 {
     "name": "Line Writer",
     "version": "1.0.0",
-    "description": "A note pad that replaces your new tab page.",
+    "description": "A notepad for your new tab page.",
     "chrome_url_overrides": {
         "newtab": "./index.html"
     },
