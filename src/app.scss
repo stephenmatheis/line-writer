@@ -1,11 +1,10 @@
 :root {
     --font-family: monospace;
-    // --color: black;
-    // --muted: #757575;
-    // --background-color: white;
     --color: #242424;
+    --color-dark: #1e1e1e;
     --muted: #bbb;
     --muted-dark: #9f9f9f;
+    --container-color: #eeeeee;
     --background-color: #ffffff;
 
     font-family: var(--font-family);
@@ -17,8 +16,8 @@
     box-sizing: border-box;
 
     &::selection {
-        color: var(--color);
-        background-color: #eee;
+        color: var(--color-dark);
+        background-color: var(--container-color);
     }
 }
 
