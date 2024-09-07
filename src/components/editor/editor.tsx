@@ -146,6 +146,7 @@ export function Editor() {
                     onPaste={handlePaste}
                     autoFocus
                     rows={1}
+                    spellCheck={false}
                 />
 
                 <div className={styles.bar} />
