@@ -22,17 +22,17 @@
         position: relative;
 
         .close {
+            cursor: pointer;
             position: absolute;
             top: 0px;
             left: 0px;
-            width: 44px;
-            height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
             border: none;
-            // background-color: #ff000030;
-            background-color: transparent;
+            background: none;
+            width: 44px;
+            height: 44px;
 
             .bar {
                 position: absolute;
@@ -52,17 +52,6 @@
                     transform: translate(-50%, -50%) rotate(135deg);
                 }
             }
-
-            // &::before {
-            //     position: absolute;
-            //     content: '';
-            //     top: 0;
-            //     right: 0;
-            //     width: 20px;
-            //     height: 4px;
-            //     border-radius: 1px;
-            //     background-color: green;
-            // }
         }
 
         .content {
