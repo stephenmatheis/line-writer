@@ -1,0 +1,32 @@
+.menu-button {
+    position: fixed;
+    top: 0;
+    right: 8px;
+
+    .btn {
+        cursor: pointer;
+        border: none;
+        background: none;
+        border-radius: 3px;
+        padding: 0;
+        height: 44px;
+        width: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+
+        &:hover {
+            .bar {
+                background-color: var(--muted-dark);
+            }
+        }
+
+        .bar {
+            width: 4px;
+            height: 4px;
+            border-radius: 1px;
+            background-color: var(--muted);
+        }
+    }
+}
