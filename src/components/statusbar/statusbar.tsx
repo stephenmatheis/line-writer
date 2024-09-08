@@ -1,6 +1,9 @@
+import { useMenu } from '@/providers/menu-provider';
 import styles from './statusbar.module.scss';
+import classNames from 'classnames';
 
 export function StatusBar({ content }: { content: string }) {
+    const { hideChars, hideWords, hideSentences } = useMenu();
     const chars = content.length;
     const words = content
         .trim()
@@ -13,14 +16,26 @@ export function StatusBar({ content }: { content: string }) {
 
     return (
         <div className={styles.statusbar}>
-            <div className={styles.item}>
-                Characters: <span>{chars}</span>
+            <div
+                className={classNames(styles.item, {
+                    [styles.hide]: hideChars,
+                })}
+            >
+                Characters <span>{chars.toLocaleString()}</span>
             </div>
-            <div className={styles.item}>
-                Words: <span>{words}</span>
+            <div
+                className={classNames(styles.item, {
+                    [styles.hide]: hideWords,
+                })}
+            >
+                Words <span>{words.toLocaleString()}</span>
             </div>
-            <div className={styles.item}>
-                Sentences: <span>{sentences}</span>
+            <div
+                className={classNames(styles.item, {
+                    [styles.hide]: hideSentences,
+                })}
+            >
+                Sentences <span>{sentences.toLocaleString()}</span>
             </div>
         </div>
     );
