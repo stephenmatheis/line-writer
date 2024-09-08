@@ -39,11 +39,15 @@ export function MenuButton() {
 
     return (
         <>
-            <div className={styles['menu-button']}>
+            <div
+                className={styles['menu-button']}
+                onClick={(event) => {
+                    event.stopPropagation();
+                }}
+            >
                 <button
                     ref={btnRef}
                     className={styles.btn}
-                    // onClick={() => setIsModalOpen(true)}
                     onClick={() => setIsMenuOpen((prev) => !prev)}
                 >
                     <div className={styles.bar} />
