@@ -39,12 +39,7 @@ export function MenuButton() {
 
     return (
         <>
-            <div
-                className={styles['menu-button']}
-                onClick={(event) => {
-                    event.stopPropagation();
-                }}
-            >
+            <div className={styles['menu-button']}>
                 <button
                     ref={btnRef}
                     className={styles.btn}
@@ -154,7 +149,10 @@ export function MenuButton() {
                             </div>
                         </div>
                         <hr />
-                        <div className={styles.item}>
+                        <div
+                            className={styles.item}
+                            onClick={() => setIsModalOpen(true)}
+                        >
                             <div className={styles.icon}>
                                 <svg
                                     width="16"

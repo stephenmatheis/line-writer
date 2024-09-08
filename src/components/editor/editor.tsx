@@ -110,6 +110,7 @@ export function Editor() {
             scrollBodyToBottom();
         }, 0);
 
+        // FIXME: Scrolls on mobile when clicking menu
         window.addEventListener('click', focus);
 
         function focus(event: Event) {
