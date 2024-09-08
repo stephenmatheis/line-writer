@@ -11,9 +11,6 @@ import {
 import { StatusBar } from '@/components/statusbar';
 import styles from './editor.module.scss';
 
-const chars = 70;
-const width = `${chars}ch`;
-
 export function Editor() {
     const [content, setContent] = useState(localStorage.getItem('note') || '');
     const [cursorPos, setCursorPos] = useState(0);
@@ -89,6 +86,9 @@ export function Editor() {
     }, [cursorPos]);
 
     useEffect(() => {
+        const chars =
+            window.innerWidth < 404 ? 35 : window.innerWidth < 700 ? 40 : 70;
+
         if (content.length <= chars) {
             return;
         }
@@ -130,17 +130,12 @@ export function Editor() {
 
     return (
         <>
-            <div className={styles.editor} style={{ width }}>
-                <div
-                    className={styles.overlay}
-                    style={{ width }}
-                    aria-hidden="true"
-                >
+            <div className={styles.editor}>
+                <div className={styles.overlay} aria-hidden="true">
                     {highlightText(content)}
                 </div>
                 <textarea
                     ref={textAreaRef}
-                    style={{ width }}
                     value={content}
                     onChange={handleInput}
                     onPaste={handlePaste}

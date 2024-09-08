@@ -21,21 +21,24 @@ export function StatusBar({ content }: { content: string }) {
                     [styles.hide]: hideChars,
                 })}
             >
-                Characters <span>{chars.toLocaleString()}</span>
+                <span style={{ width: '10ch' }}>Characters</span>{' '}
+                <span>{chars.toLocaleString()}</span>
             </div>
             <div
                 className={classNames(styles.item, {
                     [styles.hide]: hideWords,
                 })}
             >
-                Words <span>{words.toLocaleString()}</span>
+                <span style={{ width: '5ch' }}>Words</span>{' '}
+                <span>{words.toLocaleString()}</span>
             </div>
             <div
                 className={classNames(styles.item, {
                     [styles.hide]: hideSentences,
                 })}
             >
-                Sentences <span>{sentences.toLocaleString()}</span>
+                <span style={{ width: '9ch' }}>Sentences</span>{' '}
+                <span>{sentences.toLocaleString()}</span>
             </div>
         </div>
     );

@@ -7,6 +7,28 @@
 
     // background-color: #ff000030;
 
+    &,
+    .overlay,
+    textarea {
+        width: 70ch;
+    }
+
+    @media (max-width: 700px) {
+        &,
+        .overlay,
+        textarea {
+            width: 40ch;
+        }
+    }
+
+    @media (max-width: 404px) {
+        &,
+        .overlay,
+        textarea {
+            width: 35ch;
+        }
+    }
+
     .overlay,
     textarea {
         line-height: 48px;
