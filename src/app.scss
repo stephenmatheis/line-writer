@@ -7,10 +7,24 @@
     --muted-dark: #9f9f9f;
     --container-color: #eeeeee;
     --background-color: #ffffff;
+    --shadow-color: #eeeeee;
+    --divider-color: #eeeeee;
 
     font-family: var(--font-family);
     color: var(--color);
     background-color: var(--background-color);
+}
+
+[data-theme='dark'] {
+    --color: #ffffff;
+    --color-dark: #242424;
+    --color-light: #909090;
+    --muted: #555555;
+    --muted-dark: #9f9f9f;
+    --container-color: #151515;
+    --background-color: #1e1e1e;
+    --shadow-color: #242424;
+    --divider-color: #242424;
 }
 
 * {

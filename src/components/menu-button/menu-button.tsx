@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useMenu } from '@/providers/menu-provider';
 import { Modal } from '@/components/modal';
+import { Customization } from '@/components/customization';
 import styles from './menu-button.module.scss';
 import classNames from 'classnames';
 
@@ -15,6 +16,8 @@ export function MenuButton() {
         hideSentences,
         setHideSentences,
     } = useMenu();
+    const [selectedSetting, setSelectedSetting] =
+        useState<string>('Customization');
 
     const btnRef = useRef<HTMLButtonElement>(null);
 
@@ -185,7 +188,74 @@ export function MenuButton() {
                 )}
             </div>
             {isModalOpen && (
-                <Modal onClose={() => setIsModalOpen(false)}>Test</Modal>
+                <Modal onClose={() => setIsModalOpen(false)}>
+                    <div className={styles.menu}>
+                        <h2 className={styles.title}>Settings</h2>
+                        <div className={styles.panel}>
+                            <div className={styles.sidebar}>
+                                <div
+                                    className={classNames(styles.item, {
+                                        [styles.selected]:
+                                            selectedSetting === 'Customization',
+                                    })}
+                                    onClick={() =>
+                                        setSelectedSetting('Customization')
+                                    }
+                                >
+                                    Customization
+                                </div>
+                                <div
+                                    className={classNames(styles.item, {
+                                        [styles.selected]:
+                                            selectedSetting === 'General',
+                                    })}
+                                    onClick={() =>
+                                        setSelectedSetting('General')
+                                    }
+                                >
+                                    General
+                                </div>
+
+                                <div
+                                    className={classNames(styles.item, {
+                                        [styles.selected]:
+                                            selectedSetting === 'Account',
+                                    })}
+                                    onClick={() =>
+                                        setSelectedSetting('Account')
+                                    }
+                                >
+                                    Account
+                                </div>
+                            </div>
+                            <div className={styles.content}>
+                                {selectedSetting === 'Customization' && (
+                                    <Customization />
+                                )}
+                                {selectedSetting === 'General' && (
+                                    <div>
+                                        <div className={styles.label}>
+                                            General content
+                                        </div>
+                                        <div>Location</div>
+                                        <div>Units</div>
+                                    </div>
+                                )}
+
+                                {selectedSetting === 'Account' && (
+                                    <div>
+                                        <div className={styles.label}>
+                                            Account content
+                                        </div>
+                                        <div>Name</div>
+                                        <div>Email</div>
+                                        <div>Password</div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </Modal>
             )}
         </>
     );

@@ -1,0 +1,87 @@
+.customization {
+    height: 100%;
+    width: 100%;
+
+    .label {
+        padding-top: 1rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+
+    .type {
+        --br: 8px;
+
+        border-radius: var(--br);
+        display: flex;
+        gap: 0;
+
+        @media (max-width: 500px) {
+            padding: 0;
+            position: sticky;
+            z-index: 100;
+
+            &:nth-child(1) {
+                top: 21px;
+            }
+
+            &:nth-child(2) {
+                top: 81px;
+            }
+        }
+
+        .btn {
+            cursor: pointer;
+            flex: 1;
+            background-color: var(--container-color);
+            color: var(--muted-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 44px;
+            border: none;
+
+            &.selected {
+                position: relative;
+                z-index: 1;
+
+                .name {
+                    color: var(--color-light);
+                }
+
+                &::before {
+                    --padding: 8px;
+                    --offset: calc(var(--padding) / 2);
+
+                    content: '';
+                    position: absolute;
+                    top: var(--offset);
+                    left: var(--offset);
+                    width: calc(100% - var(--padding));
+                    height: calc(100% - var(--padding));
+                    border-radius: 4px;
+                    background-color: var(--background-color);
+                    z-index: -1;
+                }
+            }
+
+            &:first-child {
+                border-radius: var(--br) 0 0 var(--br);
+            }
+
+            &:last-child {
+                border-radius: 0 var(--br) var(--br) 0;
+            }
+
+            &:only-child {
+                border-radius: var(--br) var(--br);
+            }
+
+            .name {
+                font-size: 12px;
+                font-weight: 700;
+                text-transform: capitalize;
+            }
+        }
+    }
+}
