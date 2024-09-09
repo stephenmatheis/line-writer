@@ -12,11 +12,18 @@ export function Sidebar() {
             })}
         >
             <button
-                className={styles.open}
+                className={styles.btn}
                 onClick={() => setIsSidebarOpen((prev) => !prev)}
             >
                 <div className={styles.icon} />
             </button>
+            <div className={styles.items}>
+                <div className={styles.item}>Test</div>
+                <div className={styles.item}>Test</div>
+                <div className={styles.item}>Test</div>
+                <div className={styles.item}>Test</div>
+                <div className={styles.item}>Test</div>
+            </div>
         </div>
     );
 }

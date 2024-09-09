@@ -35,8 +35,11 @@
         span {
             color: var(--muted);
             display: inline-block;
-            min-width: 9ch;
             text-align: left;
+
+            &:nth-child(2) {
+                min-width: 9ch;
+            }
         }
     }
 }
