@@ -38,7 +38,24 @@
 
 body {
     margin: 0;
-    padding-top: calc(50dvh - 24px);
-    padding-bottom: calc(50dvh - 24px);
-    font-size: 16px;
+
+    // padding-top: calc(50dvh - 24px);
+    // padding-bottom: calc(50dvh - 24px);
+    // font-size: 16px;
+
+    overflow: hidden;
+}
+
+#root {
+    display: flex;
+    // justify-content: center;
+    // align-items: center;
+
+    height: 100dvh;
+
+    overflow: hidden;
+
+    // padding-top: calc(50dvh - 24px);
+    // padding-bottom: calc(50dvh - 24px);
+    // font-size: 16px;
 }

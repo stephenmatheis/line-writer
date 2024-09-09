@@ -1,5 +1,4 @@
 // https://chatgpt.com/share/ee4b1b02-bc03-46cf-bc2c-6c943f386782
-
 import {
     ChangeEvent,
     ClipboardEvent,
@@ -15,6 +14,7 @@ export function Editor() {
     const [content, setContent] = useState(localStorage.getItem('note') || '');
     const [cursorPos, setCursorPos] = useState(0);
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
+    const scrollCtrRef = useRef<HTMLDivElement>(null);
 
     function handleInput(event: ChangeEvent<HTMLTextAreaElement>) {
         const newText = event.target.value;
@@ -48,7 +48,7 @@ export function Editor() {
 
             resize(event.target as HTMLElement);
 
-            scrollBodyToBottom();
+            scrollCtrToBottom();
         }, 0);
     }
 
@@ -72,9 +72,11 @@ export function Editor() {
         );
     }
 
-    function scrollBodyToBottom() {
-        window.scrollTo({
-            top: document.documentElement.scrollHeight,
+    function scrollCtrToBottom() {
+        if (!scrollCtrRef.current) return;
+
+        scrollCtrRef.current.scrollTo({
+            top: scrollCtrRef.current.scrollHeight,
         });
     }
 
@@ -93,7 +95,7 @@ export function Editor() {
             return;
         }
 
-        scrollBodyToBottom();
+        scrollCtrToBottom();
     }, [content]);
 
     useEffect(() => {
@@ -107,7 +109,7 @@ export function Editor() {
 
             resize(textAreaRef.current);
 
-            scrollBodyToBottom();
+            scrollCtrToBottom();
         }, 0);
 
         // FIXME: Scrolls on mobile when clicking menu
@@ -131,23 +133,25 @@ export function Editor() {
 
     return (
         <>
-            <div className={styles.editor}>
-                <div className={styles.overlay} aria-hidden="true">
-                    {highlightText(content)}
-                </div>
-                <textarea
-                    ref={textAreaRef}
-                    value={content}
-                    onChange={handleInput}
-                    onPaste={handlePaste}
-                    autoFocus
-                    rows={1}
-                    spellCheck={false}
-                />
+            <div ref={scrollCtrRef} className={styles['editor-scroll-ctr']}>
+                <div className={styles.editor}>
+                    <div className={styles.overlay} aria-hidden="true">
+                        {highlightText(content)}
+                    </div>
+                    <textarea
+                        ref={textAreaRef}
+                        value={content}
+                        onChange={handleInput}
+                        onPaste={handlePaste}
+                        autoFocus
+                        rows={1}
+                        spellCheck={false}
+                    />
 
-                <div className={styles.bar} />
+                    <div className={styles.bar} />
+                </div>
             </div>
-            <StatusBar content={content} />
+            {/* <StatusBar content={content} /> */}
         </>
     );
 }
