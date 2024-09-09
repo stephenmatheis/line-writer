@@ -3,6 +3,7 @@
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
+    transition: transform 250ms ease-in-out;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -16,6 +17,10 @@
 
     @media (max-width: 404px) {
         flex-direction: column;
+    }
+
+    &.open {
+        transform: translateX(calc(-50% + 150px));
     }
 
     .item {

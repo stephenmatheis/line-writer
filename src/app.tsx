@@ -9,7 +9,7 @@ export default function App() {
         <ThemeProvider>
             <MenuProvider>
                 <Sidebar />
-                {/* <MenuButton /> */}
+                <MenuButton />
                 <Editor />
             </MenuProvider>
         </ThemeProvider>

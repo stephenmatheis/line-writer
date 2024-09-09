@@ -21,6 +21,8 @@ type ContextProps = {
     setHideWords: Dispatch<SetStateAction<boolean>>;
     hideSentences: boolean;
     setHideSentences: Dispatch<SetStateAction<boolean>>;
+    isSidebarOpen: boolean;
+    setIsSidebarOpen: Dispatch<SetStateAction<boolean>>;
 };
 
 const MenuContext = createContext<ContextProps | undefined>(undefined);
@@ -51,6 +53,7 @@ export function MenuProvider({ children }: MenuProviderProps) {
 
         return storedValue === 'true' ? true : false;
     });
+    const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
     useEffect(() => {
         localStorage.setItem('hideChars', hideChars.toString());
@@ -73,6 +76,8 @@ export function MenuProvider({ children }: MenuProviderProps) {
                 setHideWords,
                 hideSentences,
                 setHideSentences,
+                isSidebarOpen,
+                setIsSidebarOpen,
             }}
         >
             {children}

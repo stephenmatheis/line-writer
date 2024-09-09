@@ -1,12 +1,7 @@
 .editor-scroll-ctr {
-    // flex: 1;
-    // height: 100dvh;
-
+    flex: 1;
     padding-top: calc(50dvh - 24px);
     padding-bottom: calc(50dvh - 24px);
-
-    flex: 1;
-    // display: flex;
     overflow: auto;
 
     .editor {

@@ -3,7 +3,7 @@ import styles from './statusbar.module.scss';
 import classNames from 'classnames';
 
 export function StatusBar({ content }: { content: string }) {
-    const { hideChars, hideWords, hideSentences } = useMenu();
+    const { hideChars, hideWords, hideSentences, isSidebarOpen } = useMenu();
     const chars = content.length;
     const words = content
         .trim()
@@ -15,7 +15,11 @@ export function StatusBar({ content }: { content: string }) {
         .filter((x) => x).length;
 
     return (
-        <div className={styles.statusbar}>
+        <div
+            className={classNames(styles.statusbar, {
+                [styles.open]: isSidebarOpen,
+            })}
+        >
             <div
                 className={classNames(styles.item, {
                     [styles.hide]: hideChars,

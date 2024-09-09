@@ -1,4 +1,3 @@
-// https://chatgpt.com/share/ee4b1b02-bc03-46cf-bc2c-6c943f386782
 import {
     ChangeEvent,
     ClipboardEvent,
@@ -150,8 +149,8 @@ export function Editor() {
 
                     <div className={styles.bar} />
                 </div>
+                <StatusBar content={content} />
             </div>
-            {/* <StatusBar content={content} /> */}
         </>
     );
 }
