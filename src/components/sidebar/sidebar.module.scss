@@ -2,15 +2,12 @@
     height: 100dvh;
     width: 0px;
     transition: width 250ms ease-in-out;
-    box-shadow: 2px 0px 0px 0px var(--container-color);
+    background-color: whitesmoke;
+    // box-shadow: 2px 0px 0px 0px var(--container-color);
     overflow: hidden;
 
     &.open {
         width: 300px;
-
-        .items {
-            opacity: 1;
-        }
     }
 
     .btn {
@@ -40,7 +37,6 @@
             height: 22px;
             width: 22px;
             border-radius: 4px;
-            background-color: var(--background-color);
 
             &::after {
                 content: '';
@@ -55,10 +51,8 @@
     }
 
     .items {
-        opacity: 0;
         margin-top: 44px;
         color: var(--color-light);
-        transition: opacity 150ms ease-in-out 100ms;
 
         .item {
             padding: 1rem;
