@@ -4,21 +4,21 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="apple-touch-icon" sizes="57x57" href="favicons/apple-touch-icon-57x57.png" />
-    <link rel="apple-touch-icon" sizes="114x114" href="favicons/apple-touch-icon-114x114.png" />
-    <link rel="apple-touch-icon" sizes="72x72" href="favicons/apple-touch-icon-72x72.png" />
-    <link rel="apple-touch-icon" sizes="144x144" href="favicons/apple-touch-icon-144x144.png" />
-    <link rel="apple-touch-icon" sizes="60x60" href="favicons/apple-touch-icon-60x60.png" />
-    <link rel="apple-touch-icon" sizes="120x120" href="favicons/apple-touch-icon-120x120.png" />
-    <link rel="apple-touch-icon" sizes="76x76" href="favicons/apple-touch-icon-76x76.png" />
-    <link rel="apple-touch-icon" sizes="152x152" href="favicons/apple-touch-icon-152x152.png" />
-    <link rel="icon" type="image/png" href="favicons/favicon-196x196.png" sizes="196x196" />
-    <link rel="icon" type="image/png" href="favicons/favicon-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/png" href="favicons/favicon-32x32.png" sizes="32x32" />
-    <link rel="icon" type="image/png" href="favicons/favicon-16x16.png" sizes="16x16" />
-    <link rel="icon" type="image/png" href="favicons/favicon-128.png" sizes="128x128" />
-    <link rel="shortcut icon" href="favicons/favicon.ico">
-    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" sizes="57x57" href="/favicons/apple-touch-icon-57x57.png" />
+    <link rel="apple-touch-icon" sizes="114x114" href="/favicons/apple-touch-icon-114x114.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="/favicons/apple-touch-icon-72x72.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="/favicons/apple-touch-icon-144x144.png" />
+    <link rel="apple-touch-icon" sizes="60x60" href="/favicons/apple-touch-icon-60x60.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/favicons/apple-touch-icon-120x120.png" />
+    <link rel="apple-touch-icon" sizes="76x76" href="/favicons/apple-touch-icon-76x76.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/favicons/apple-touch-icon-152x152.png" />
+    <link rel="icon" type="image/png" href="/favicons/favicon-196x196.png" sizes="196x196" />
+    <link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/png" href="/favicons/favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="/favicons/favicon-16x16.png" sizes="16x16" />
+    <link rel="icon" type="image/png" href="/favicons/favicon-128.png" sizes="128x128" />
+    <link rel="shortcut icon" href="/favicons/favicon.ico">
+    <link rel="manifest" href="/manifest.json" />
     <title>Line Writer</title>
     <meta name="description"
         content="Line Writer is a simple notepad that keeps the line you're typing in the center of the page.">
@@ -42,17 +42,7 @@
     <meta name="twitter:image:height" content="630">
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1e1e1e">
-    <script>
-        (function () {
-            const systemDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const savedTheme = localStorage.getItem('theme');
-            const theme = savedTheme === 'system'
-                ? (systemDarkMode ? 'dark' : 'light')
-                : savedTheme || (systemDarkMode ? 'dark' : 'light');
-
-            document.documentElement.setAttribute('data-theme', theme);
-        })();
-    </script>
+    <script src="/theme.js" type="module"></script>
 </head>
 
 <body>

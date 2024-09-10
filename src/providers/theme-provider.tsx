@@ -54,11 +54,24 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
         function applyTheme(currentTheme: Theme) {
             const resolvedTheme =
                 currentTheme === 'system' ? getSystemTheme() : currentTheme;
+
+            // Set the data-theme attribute
             document.documentElement.setAttribute('data-theme', resolvedTheme);
+
+            // Set the PWA theme color
+            const themeColor = resolvedTheme === 'dark' ? '#1e1e1e' : '#ffffff';
+            const metaThemeColor = document.querySelector(
+                'meta[name="theme-color"]'
+            );
+
+            if (metaThemeColor) {
+                metaThemeColor.setAttribute('content', themeColor);
+            }
         }
 
         applyTheme(theme);
 
+        // Listen for changes to OS preference
         if (theme === 'system') {
             const systemTheme = window.matchMedia(
                 '(prefers-color-scheme: dark)'
