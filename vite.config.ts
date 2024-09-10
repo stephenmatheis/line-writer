@@ -1,17 +1,35 @@
-import { defineConfig } from 'vite';
 import path from 'path';
+import { copyFileSync } from 'fs';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// https://vitejs.dev/config/
-export default defineConfig({
-    plugins: [react()],
-    resolve: {
-        alias: {
-            '@': path.resolve(__dirname, './src'),
+export default defineConfig(() => {
+    const args = process.argv;
+    const isExtension = args.includes('--ext');
+
+    const publicDir = path.resolve(__dirname, 'public');
+    const manifestsDir = path.resolve(__dirname, 'manifests');
+    const targetManifest = isExtension
+        ? 'manifest-extension.json'
+        : 'manifest-pwa.json';
+
+    copyFileSync(
+        path.resolve(manifestsDir, targetManifest),
+        path.resolve(publicDir, 'manifest.json')
+    );
+
+    console.log(`Copied ${targetManifest} to manifest.json`);
+
+    return {
+        plugins: [react()],
+        resolve: {
+            alias: {
+                '@': path.resolve(__dirname, './src'),
+            },
         },
-    },
-    server: {
-        port: 3000,
-        host: true,
-    },
+        server: {
+            port: 3000,
+            host: true,
+        },
+    };
 });

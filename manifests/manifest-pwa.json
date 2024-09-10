@@ -1,0 +1,37 @@
+{
+    "short_name": "Line Writer",
+    "name": "Line Writer",
+    "icons": [
+        {
+            "src": "favicons/android-chrome-192x192.png",
+            "type": "image/png",
+            "sizes": "192x192"
+        },
+        {
+            "src": "favicons/android-chrome-512x512.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ],
+    "id": "/",
+    "start_url": "/",
+    "background_color": "#ffffff",
+    "display": "standalone",
+    "scope": "/",
+    "theme_color": "#ffffff",
+    "description": "Line Writer is a simple notepad that keeps the line you're typing in the center of the page.",
+    "screenshots": [
+        {
+            "src": "images/linewriter-1280x800.png",
+            "type": "image/png",
+            "sizes": "1280x800",
+            "form_factor": "wide"
+        },
+        {
+            "src": "images/linewriter-1024x768.png",
+            "type": "image/png",
+            "sizes": "1024x768",
+            "form_factor": "narrow"
+        }
+    ]
+}
