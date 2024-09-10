@@ -3,15 +3,18 @@ import { MenuProvider } from '@/providers/menu-provider';
 import { Sidebar } from '@/components/sidebar/sidebar';
 import { MenuButton } from '@/components/menu-button';
 import { Editor } from '@/components/editor';
+import { AuthProvider } from '@/providers/auth-provider';
 
 export default function App() {
     return (
-        <ThemeProvider>
-            <MenuProvider>
-                <Sidebar />
-                <MenuButton />
-                <Editor />
-            </MenuProvider>
-        </ThemeProvider>
+        <AuthProvider>
+            <ThemeProvider>
+                <MenuProvider>
+                    <Sidebar />
+                    <MenuButton />
+                    <Editor />
+                </MenuProvider>
+            </ThemeProvider>
+        </AuthProvider>
     );
 }
