@@ -2,8 +2,7 @@
     height: 100dvh;
     width: 0px;
     transition: width 250ms ease-in-out;
-    background-color: whitesmoke;
-    // box-shadow: 2px 0px 0px 0px var(--container-color);
+    background-color: #f9f9f9;
     overflow: hidden;
 
     &.open {

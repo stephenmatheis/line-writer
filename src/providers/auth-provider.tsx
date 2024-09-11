@@ -18,7 +18,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // Create a context for the Auth state
 interface AuthContextProps {
     session: Session | null;
-    supabase: SupabaseClient | null;
+    supabase: SupabaseClient;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
