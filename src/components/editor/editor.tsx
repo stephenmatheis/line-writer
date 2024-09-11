@@ -111,28 +111,30 @@ export function Editor() {
             scrollCtrToBottom();
         }, 0);
 
-        // FIXME: Scrolls on mobile when clicking menu
-        window.addEventListener('click', focus);
+        // window.addEventListener('click', focus);
 
-        function focus(event: Event) {
-            if (
-                textAreaRef.current &&
-                !textAreaRef.current.contains(event.target as Node)
-            ) {
-                if (window.getSelection) {
-                    window.getSelection()?.removeAllRanges();
-                }
-            }
+        // function focus(event: Event) {
+        //     if (
+        //         textAreaRef.current &&
+        //         !textAreaRef.current.contains(event.target as Node)
+        //     ) {
+        //         if (window.getSelection) {
+        //             window.getSelection()?.removeAllRanges();
+        //         }
+        //     }
+        //     textAreaRef.current?.focus();
+        // }
 
-            textAreaRef.current?.focus();
-        }
-
-        return () => window.removeEventListener('click', focus);
+        // return () => window.removeEventListener('click', focus);
     }, []);
 
     return (
         <>
-            <div ref={scrollCtrRef} className={styles['editor-scroll-ctr']}>
+            <div
+                ref={scrollCtrRef}
+                className={styles['editor-scroll-ctr']}
+                onClick={() => textAreaRef.current?.focus()}
+            >
                 <div className={styles.editor}>
                     <div className={styles.overlay} aria-hidden="true">
                         {highlightText(content)}
