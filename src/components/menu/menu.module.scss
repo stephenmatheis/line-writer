@@ -1,4 +1,4 @@
-.menu-button {
+.menu {
     position: fixed;
     top: 0;
     right: 8px;
@@ -32,7 +32,7 @@
         }
     }
 
-    .menu {
+    .list {
         position: absolute;
         top: 44px;
         right: 20px;
@@ -67,19 +67,27 @@
                 background-color: var(--container-color);
             }
 
+            &.red {
+                color: red;
+
+                .icon {
+                    svg {
+                        fill: red;
+                    }
+                }
+            }
+
             .icon {
                 display: flex;
                 align-items: center;
                 justify-content: center;
 
-                &.hide {
-                    svg {
-                        color: transparent;
-                    }
-                }
-
                 svg {
-                    color: var(--color-light);
+                    fill: var(--color-light);
+
+                    &.hide {
+                        fill: transparent;
+                    }
                 }
             }
 
@@ -91,7 +99,7 @@
 }
 
 // Modal: Settings
-.menu {
+.ctr {
     .title {
         padding: 0 2rem;
     }

@@ -2,11 +2,15 @@ import { useEffect, useState, useRef } from 'react';
 import { useMenu } from '@/providers/menu-provider';
 import { Modal } from '@/components/modal';
 import { Customization } from '@/components/customization';
-import styles from './menu-button.module.scss';
+import styles from './menu.module.scss';
 import classNames from 'classnames';
+import { useAuth } from '@/providers/auth-provider';
+import { SigninForm } from '@/components/signin-form';
 
-export function MenuButton() {
-    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+export function Menu() {
+    const [isSettingsModalOpen, setIsSettingsModalOpen] =
+        useState<boolean>(false);
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
     const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
     const {
         hideChars,
@@ -16,6 +20,7 @@ export function MenuButton() {
         hideSentences,
         setHideSentences,
     } = useMenu();
+    const { session, supabase } = useAuth();
     const [selectedSetting, setSelectedSetting] =
         useState<string>('Customization');
 
@@ -42,7 +47,7 @@ export function MenuButton() {
 
     return (
         <>
-            <div className={styles['menu-button']}>
+            <div className={styles.menu}>
                 <button
                     ref={btnRef}
                     className={styles.btn}
@@ -53,7 +58,7 @@ export function MenuButton() {
                     <div className={styles.bar} />
                 </button>
                 {isMenuOpen && (
-                    <div className={styles.menu}>
+                    <div className={styles.list}>
                         <div
                             className={styles.item}
                             onClick={() => {
@@ -69,12 +74,11 @@ export function MenuButton() {
                                 });
                             }}
                         >
-                            <div
-                                className={classNames(styles.icon, {
-                                    [styles.hide]: !hideChars,
-                                })}
-                            >
+                            <div className={styles.icon}>
                                 <svg
+                                    className={classNames({
+                                        [styles.hide]: !hideChars,
+                                    })}
                                     width="16"
                                     height="16"
                                     fill="currentColor"
@@ -102,12 +106,11 @@ export function MenuButton() {
                                 });
                             }}
                         >
-                            <div
-                                className={classNames(styles.icon, {
-                                    [styles.hide]: !hideWords,
-                                })}
-                            >
+                            <div className={styles.icon}>
                                 <svg
+                                    className={classNames({
+                                        [styles.hide]: !hideWords,
+                                    })}
                                     width="16"
                                     height="16"
                                     fill="currentColor"
@@ -133,12 +136,11 @@ export function MenuButton() {
                                 });
                             }}
                         >
-                            <div
-                                className={classNames(styles.icon, {
-                                    [styles.hide]: !hideSentences,
-                                })}
-                            >
+                            <div className={styles.icon}>
                                 <svg
+                                    className={classNames({
+                                        [styles.hide]: !hideSentences,
+                                    })}
                                     width="16"
                                     height="16"
                                     fill="currentColor"
@@ -154,7 +156,7 @@ export function MenuButton() {
                         <hr />
                         <div
                             className={styles.item}
-                            onClick={() => setIsModalOpen(true)}
+                            onClick={() => setIsSettingsModalOpen(true)}
                         >
                             <div className={styles.icon}>
                                 <svg
@@ -170,8 +172,26 @@ export function MenuButton() {
                             <div className={styles.label}>Settings</div>
                         </div>
                         <hr />
-                        {/* TODO: Toggle based on current auth state */}
-                        <div className={styles.item}>
+                        <div
+                            className={classNames(styles.item, {
+                                [styles.red]: session,
+                            })}
+                            onClick={async () => {
+                                if (session === null) {
+                                    setIsAuthModalOpen(true);
+
+                                    return;
+                                }
+
+                                // TODO:
+                                // Sign out;
+                                const { error } = await supabase.auth.signOut({
+                                    scope: 'local',
+                                });
+
+                                console.log(error);
+                            }}
+                        >
                             <div className={styles.icon}>
                                 <svg
                                     width="16"
@@ -179,17 +199,41 @@ export function MenuButton() {
                                     fill="currentColor"
                                     viewBox="0 0 16 16"
                                 >
-                                    <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z" />
+                                    {session === null ? (
+                                        <>
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0z"
+                                            />
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"
+                                            />
+                                        </>
+                                    ) : (
+                                        <>
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0z"
+                                            />
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708z"
+                                            />
+                                        </>
+                                    )}
                                 </svg>
                             </div>
-                            <div className={styles.label}>Sign in/out</div>
+                            <div className={styles.label}>
+                                Sign {session === null ? 'in' : 'out'}
+                            </div>
                         </div>
                     </div>
                 )}
             </div>
-            {isModalOpen && (
-                <Modal onClose={() => setIsModalOpen(false)}>
-                    <div className={styles.menu}>
+            {isSettingsModalOpen && (
+                <Modal onClose={() => setIsSettingsModalOpen(false)}>
+                    <div className={styles.ctr}>
                         <h2 className={styles.title}>Settings</h2>
                         <div className={styles.panel}>
                             <div className={styles.sidebar}>
@@ -254,6 +298,13 @@ export function MenuButton() {
                                 )}
                             </div>
                         </div>
+                    </div>
+                </Modal>
+            )}
+            {isAuthModalOpen && (
+                <Modal onClose={() => setIsAuthModalOpen(false)}>
+                    <div className={styles.ctr}>
+                        <SigninForm />
                     </div>
                 </Modal>
             )}
