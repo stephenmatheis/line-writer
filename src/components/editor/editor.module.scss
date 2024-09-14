@@ -58,21 +58,44 @@
             }
         }
 
-        textarea {
-            position: relative;
-            font-family: inherit;
-            font-size: inherit;
-            background: none;
-            color: transparent;
-            resize: none;
-            outline: none;
-            border: none;
-            padding: 0;
-            caret-color: var(--color);
-            overflow: hidden;
-            z-index: 2;
+        .textarea-wrapper {
+            textarea {
+                position: relative;
+                font-family: inherit;
+                font-size: inherit;
+                background: none;
+                color: transparent;
+                resize: none;
+                outline: none;
+                border: none;
+                padding: 0;
+                white-space: pre-wrap;
+                // caret-color: var(--color);
+                caret-color: red;
+                overflow: hidden;
+                z-index: 2;
+            }
 
-            white-space: pre-wrap;
+            .caret {
+                position: absolute;
+                width: 2px;
+                height: 1.2em;
+                background-color: black;
+                animation: blink 1s steps(1) infinite;
+                pointer-events: none; // So it doesn’t interfere with text selection
+            }
+        }
+
+        @keyframes blink {
+            0% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
         }
     }
 }

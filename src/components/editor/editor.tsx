@@ -113,6 +113,27 @@ export function Editor() {
         }, 0);
     }, []);
 
+    const [caretPosition, setCaretPosition] = useState({ top: 0, left: 0 });
+
+    function updateCaretPosition() {
+        const textarea = textAreaRef.current;
+
+        if (textarea) {
+            const { selectionStart } = textarea;
+            const text = textarea.value.substring(0, selectionStart);
+            const lines = text.split('\n');
+            const currentLine = lines[lines.length - 1];
+            const lineHeight = 20; // Adjust based on textarea font size
+            const caretTop = (lines.length - 1) * lineHeight;
+            const caretLeft = currentLine.length * 8; // Adjust based on character width
+
+            setCaretPosition({
+                top: caretTop,
+                left: caretLeft,
+            });
+        }
+    }
+
     return (
         <div
             ref={scrollCtrRef}
@@ -137,15 +158,27 @@ export function Editor() {
                 <div className={styles.overlay} aria-hidden="true">
                     {highlightText(content)}
                 </div>
-                <textarea
-                    ref={textAreaRef}
-                    value={content}
-                    onChange={handleInput}
-                    onPaste={handlePaste}
-                    autoFocus
-                    rows={1}
-                    spellCheck={false}
-                />
+                <div className={styles['textarea-wrapper']}>
+                    <textarea
+                        ref={textAreaRef}
+                        value={content}
+                        onChange={handleInput}
+                        onPaste={handlePaste}
+                        onInput={updateCaretPosition}
+                        onClick={updateCaretPosition}
+                        onKeyDown={updateCaretPosition}
+                        autoFocus
+                        rows={1}
+                        spellCheck={false}
+                    />
+                    <span
+                        className={styles.caret}
+                        style={{
+                            top: `${caretPosition.top}px`,
+                            left: `${caretPosition.left}px`,
+                        }}
+                    />
+                </div>
             </div>
             <StatusBar content={content} />
             {/* <div className={styles.bar} /> */}
