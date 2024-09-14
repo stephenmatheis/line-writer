@@ -24,7 +24,7 @@
     }
 
     .item {
-        display: none;
+        // display: none;
 
         text-align: center;
         color: var(--muted);
@@ -47,7 +47,7 @@
 
     .bar {
         display: none;
-        
+
         height: 4px;
         border-radius: 2px;
         width: 100px;
