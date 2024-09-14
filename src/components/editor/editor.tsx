@@ -5,6 +5,7 @@ import {
     useRef,
     useEffect,
     Fragment,
+    MouseEvent,
 } from 'react';
 import { StatusBar } from '@/components/statusbar';
 import styles from './editor.module.scss';
@@ -110,50 +111,45 @@ export function Editor() {
 
             scrollCtrToBottom();
         }, 0);
-
-        // window.addEventListener('click', focus);
-
-        // function focus(event: Event) {
-        //     if (
-        //         textAreaRef.current &&
-        //         !textAreaRef.current.contains(event.target as Node)
-        //     ) {
-        //         if (window.getSelection) {
-        //             window.getSelection()?.removeAllRanges();
-        //         }
-        //     }
-        //     textAreaRef.current?.focus();
-        // }
-
-        // return () => window.removeEventListener('click', focus);
     }, []);
 
     return (
-        <>
-            <div
-                ref={scrollCtrRef}
-                className={styles['editor-scroll-ctr']}
-                onClick={() => textAreaRef.current?.focus()}
-            >
-                <div className={styles.editor}>
-                    <div className={styles.overlay} aria-hidden="true">
-                        {highlightText(content)}
-                    </div>
-                    <textarea
-                        ref={textAreaRef}
-                        value={content}
-                        onChange={handleInput}
-                        onPaste={handlePaste}
-                        autoFocus
-                        rows={1}
-                        spellCheck={false}
-                    />
+        <div
+            ref={scrollCtrRef}
+            className={styles['editor-scroll-ctr']}
+            onClick={(event: MouseEvent) => {
+                if (!textAreaRef.current) return;
 
-                    <div className={styles.bar} />
+                if (!textAreaRef.current.contains(event.target as Node)) {
+                    if (window.getSelection) {
+                        window.getSelection()?.removeAllRanges();
+                    }
+
+                    textAreaRef.current?.focus();
+                    textAreaRef.current.setSelectionRange(
+                        content.length,
+                        content.length
+                    );
+                }
+            }}
+        >
+            <div className={styles.editor}>
+                <div className={styles.overlay} aria-hidden="true">
+                    {highlightText(content)}
                 </div>
-                <StatusBar content={content} />
+                <textarea
+                    ref={textAreaRef}
+                    value={content}
+                    onChange={handleInput}
+                    onPaste={handlePaste}
+                    autoFocus
+                    rows={1}
+                    spellCheck={false}
+                />
             </div>
-        </>
+            <StatusBar content={content} />
+            {/* <div className={styles.bar} /> */}
+        </div>
     );
 }
 
