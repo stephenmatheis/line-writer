@@ -44,6 +44,7 @@ export function StatusBar({ content }: { content: string }) {
                 <span style={{ width: '9ch' }}>Sentences</span>{' '}
                 <span>{sentences.toLocaleString()}</span>
             </div>
+            <div className={styles.bar} />
         </div>
     );
 }

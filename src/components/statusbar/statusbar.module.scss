@@ -3,7 +3,7 @@
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-    transition: transform 250ms ease-in-out;
+    // transition: transform 250ms ease-in-out;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -24,6 +24,8 @@
     }
 
     .item {
+        display: none;
+
         text-align: center;
         color: var(--muted);
         font-size: 11px;
@@ -41,5 +43,14 @@
                 min-width: 9ch;
             }
         }
+    }
+
+    .bar {
+        display: none;
+        
+        height: 4px;
+        border-radius: 2px;
+        width: 100px;
+        background-color: var(--divider-color);
     }
 }
