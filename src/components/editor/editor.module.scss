@@ -9,12 +9,11 @@
         display: flex;
         flex-direction: column;
         width: 100%;
-        margin: 0 auto;
-
-        background-color: #ff000030;
-
         font-size: 16px;
+        margin: 0 auto;
         overflow: auto;
+
+        // background-color: #ff000030;
 
         &,
         .overlay,
@@ -79,8 +78,6 @@
 }
 
 .bar {
-    // display: none;
-
     position: fixed;
     width: 100vw;
     height: 2px;
