@@ -6,11 +6,7 @@ export function CommandPalette() {
 
     useEffect(() => {
         function open(event: KeyboardEvent) {
-            if (
-                (event.metaKey || event.ctrlKey) &&
-                event.shiftKey &&
-                event.key == 'p'
-            ) {
+            if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key == 'p') {
                 event.preventDefault();
                 setIsOpen(true);
 

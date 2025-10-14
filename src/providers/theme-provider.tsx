@@ -1,12 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 
-import {
-    createContext,
-    useContext,
-    useState,
-    useEffect,
-    ReactNode,
-} from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 export type Theme = 'light' | 'dark' | 'system';
 
@@ -32,9 +26,7 @@ interface ThemeProviderProps {
 }
 
 function getSystemTheme() {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
@@ -52,17 +44,14 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
     useEffect(() => {
         function applyTheme(currentTheme: Theme) {
-            const resolvedTheme =
-                currentTheme === 'system' ? getSystemTheme() : currentTheme;
+            const resolvedTheme = currentTheme === 'system' ? getSystemTheme() : currentTheme;
 
             // Set the data-theme attribute
             document.documentElement.setAttribute('data-theme', resolvedTheme);
 
             // Set the PWA theme color
             const themeColor = resolvedTheme === 'dark' ? '#1e1e1e' : '#ffffff';
-            const metaThemeColor = document.querySelector(
-                'meta[name="theme-color"]'
-            );
+            const metaThemeColor = document.querySelector('meta[name="theme-color"]');
 
             if (metaThemeColor) {
                 metaThemeColor.setAttribute('content', themeColor);
@@ -73,9 +62,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
         // Listen for changes to OS preference
         if (theme === 'system') {
-            const systemTheme = window.matchMedia(
-                '(prefers-color-scheme: dark)'
-            );
+            const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
 
             function systemThemeHandler() {
                 applyTheme('system');
@@ -83,14 +70,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
             systemTheme.addEventListener('change', systemThemeHandler);
 
-            return () =>
-                systemTheme.removeEventListener('change', systemThemeHandler);
+            return () => systemTheme.removeEventListener('change', systemThemeHandler);
         }
     }, [theme]);
 
-    return (
-        <ThemeContext.Provider value={{ theme, setTheme }}>
-            {children}
-        </ThemeContext.Provider>
-    );
+    return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>;
 }

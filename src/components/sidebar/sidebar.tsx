@@ -11,10 +11,7 @@ export function Sidebar() {
                 [styles.open]: isSidebarOpen,
             })}
         >
-            <button
-                className={styles.btn}
-                onClick={() => setIsSidebarOpen((prev) => !prev)}
-            >
+            <button className={styles.btn} onClick={() => setIsSidebarOpen((prev) => !prev)}>
                 <div className={styles.icon} />
             </button>
             <div className={styles.items}>

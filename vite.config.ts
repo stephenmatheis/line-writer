@@ -10,14 +10,9 @@ export default defineConfig(() => {
 
     const publicDir = path.resolve(__dirname, 'public');
     const manifestsDir = path.resolve(__dirname, 'manifests');
-    const targetManifest = isExtension
-        ? 'manifest-extension.json'
-        : 'manifest-pwa.json';
+    const targetManifest = isExtension ? 'manifest-extension.json' : 'manifest-pwa.json';
 
-    copyFileSync(
-        path.resolve(manifestsDir, targetManifest),
-        path.resolve(publicDir, 'manifest.json')
-    );
+    copyFileSync(path.resolve(manifestsDir, targetManifest), path.resolve(publicDir, 'manifest.json'));
 
     console.log(`Copied ${targetManifest} to manifest.json`);
 

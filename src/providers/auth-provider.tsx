@@ -1,11 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import {
-    createContext,
-    useContext,
-    useState,
-    useEffect,
-    ReactNode,
-} from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { createClient, Session, SupabaseClient } from '@supabase/supabase-js';
 
 // import { Auth } from '@supabase/auth-ui-react';
@@ -51,9 +45,5 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return () => subscription.unsubscribe();
     }, []);
 
-    return (
-        <AuthContext.Provider value={{ session, supabase }}>
-            {children}
-        </AuthContext.Provider>
-    );
+    return <AuthContext.Provider value={{ session, supabase }}>{children}</AuthContext.Provider>;
 }

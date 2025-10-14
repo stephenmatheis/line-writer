@@ -46,9 +46,7 @@ export function SigninForm() {
         if (error) {
             setError(error.message);
         } else {
-            alert(
-                'Sign-up successful! Please check your email for confirmation.'
-            );
+            alert('Sign-up successful! Please check your email for confirmation.');
         }
     }
 
@@ -73,38 +71,20 @@ export function SigninForm() {
 
             <div>
                 <label>Email</label>
-                <input
-                    type="email"
-                    value={email}
-                    onChange={handleEmailChange}
-                    required
-                />
+                <input type="email" value={email} onChange={handleEmailChange} required />
             </div>
 
             <div>
                 <label>Password</label>
-                <input
-                    type="password"
-                    value={password}
-                    onChange={handlePasswordChange}
-                    required
-                />
+                <input type="password" value={password} onChange={handlePasswordChange} required />
             </div>
 
             <button type="submit" disabled={loading}>
-                {loading
-                    ? isSignUp
-                        ? 'Signing up...'
-                        : 'Signing in...'
-                    : isSignUp
-                    ? 'Sign Up'
-                    : 'Sign In'}
+                {loading ? (isSignUp ? 'Signing up...' : 'Signing in...') : isSignUp ? 'Sign Up' : 'Sign In'}
             </button>
 
             <p>
-                {isSignUp
-                    ? 'Already have an account?'
-                    : "Don't have an account?"}{' '}
+                {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
                 <button type="button" onClick={toggleFormMode}>
                     {isSignUp ? 'Sign In' : 'Sign Up'}
                 </button>
