@@ -19,7 +19,7 @@
     "display": "standalone",
     "scope": "/",
     "theme_color": "#ffffff",
-    "description": "Line Writer is a simple notepad that keeps the line you're typing in the center of the page.",
+    "description": "Line Writer is a simple notepad that highlights the line you're typing always in the center of the page.",
     "screenshots": [
         {
             "src": "images/linewriter-1280x800.png",
