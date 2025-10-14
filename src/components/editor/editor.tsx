@@ -7,7 +7,7 @@ import {
     Fragment,
     MouseEvent,
 } from 'react';
-import { StatusBar } from '@/components/statusbar';
+// import { StatusBar } from '@/components/statusbar';
 import styles from './editor.module.scss';
 
 export function Editor() {
@@ -147,8 +147,7 @@ export function Editor() {
                     spellCheck={false}
                 />
             </div>
-            <StatusBar content={content} />
-            {/* <div className={styles.bar} /> */}
+            {/* <StatusBar content={content} /> */}
         </div>
     );
 }
