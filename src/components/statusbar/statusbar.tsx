@@ -18,7 +18,7 @@ export function StatusBar({ content }: { content: string }) {
         <div className={styles.statusbar}>
             <div
                 className={classNames(styles.item, {
-                    [styles.hide]: hideChars,
+                    [styles.hide]: !hideChars,
                 })}
             >
                 <span style={{ width: '10ch' }}>Characters</span>{' '}
@@ -26,7 +26,7 @@ export function StatusBar({ content }: { content: string }) {
             </div>
             <div
                 className={classNames(styles.item, {
-                    [styles.hide]: hideWords,
+                    [styles.hide]: !hideWords,
                 })}
             >
                 <span style={{ width: '5ch' }}>Words</span>{' '}
@@ -34,7 +34,7 @@ export function StatusBar({ content }: { content: string }) {
             </div>
             <div
                 className={classNames(styles.item, {
-                    [styles.hide]: hideSentences,
+                    [styles.hide]: !hideSentences,
                 })}
             >
                 <span style={{ width: '9ch' }}>Sentences</span>{' '}

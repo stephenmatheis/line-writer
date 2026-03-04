@@ -62,7 +62,7 @@ export function MenuButton() {
 
                                     localStorage.setItem(
                                         'hideChars',
-                                        newValue.toString()
+                                        newValue.toString(),
                                     );
 
                                     return newValue;
@@ -84,7 +84,7 @@ export function MenuButton() {
                                 </svg>
                             </div>
                             <div className={styles.label}>
-                                Hide character count
+                                Show character count
                             </div>
                         </div>
                         <div
@@ -95,7 +95,7 @@ export function MenuButton() {
 
                                     localStorage.setItem(
                                         'hideWords',
-                                        newValue.toString()
+                                        newValue.toString(),
                                     );
 
                                     return newValue;
@@ -116,7 +116,7 @@ export function MenuButton() {
                                     <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z" />
                                 </svg>
                             </div>
-                            <div className={styles.label}>Hide word count</div>
+                            <div className={styles.label}>Show word count</div>
                         </div>
                         <div
                             className={styles.item}
@@ -126,7 +126,7 @@ export function MenuButton() {
 
                                     localStorage.setItem(
                                         'hideSentences',
-                                        newValue.toString()
+                                        newValue.toString(),
                                     );
 
                                     return newValue;
@@ -148,7 +148,7 @@ export function MenuButton() {
                                 </svg>
                             </div>
                             <div className={styles.label}>
-                                Hide sentence count
+                                Show sentence count
                             </div>
                         </div>
                         <hr />
@@ -169,9 +169,8 @@ export function MenuButton() {
                             </div>
                             <div className={styles.label}>Settings</div>
                         </div>
-                        <hr />
-                        {/* TODO: Toggle based on current auth state */}
-                        <div className={styles.item}>
+                        {/* <hr /> */}
+                        {/* <div className={styles.item}>
                             <div className={styles.icon}>
                                 <svg
                                     width="16"
@@ -183,7 +182,7 @@ export function MenuButton() {
                                 </svg>
                             </div>
                             <div className={styles.label}>Sign in/out</div>
-                        </div>
+                        </div> */}
                     </div>
                 )}
             </div>
@@ -204,7 +203,7 @@ export function MenuButton() {
                                 >
                                     Customization
                                 </div>
-                                <div
+                                {/* <div
                                     className={classNames(styles.item, {
                                         [styles.selected]:
                                             selectedSetting === 'General',
@@ -214,9 +213,8 @@ export function MenuButton() {
                                     }
                                 >
                                     General
-                                </div>
-
-                                <div
+                                </div> */}
+                                {/* <div
                                     className={classNames(styles.item, {
                                         [styles.selected]:
                                             selectedSetting === 'Account',
@@ -226,13 +224,13 @@ export function MenuButton() {
                                     }
                                 >
                                     Account
-                                </div>
+                                </div> */}
                             </div>
                             <div className={styles.content}>
                                 {selectedSetting === 'Customization' && (
                                     <Customization />
                                 )}
-                                {selectedSetting === 'General' && (
+                                {/* {selectedSetting === 'General' && (
                                     <div>
                                         <div className={styles.label}>
                                             General content
@@ -240,9 +238,8 @@ export function MenuButton() {
                                         <div>Location</div>
                                         <div>Units</div>
                                     </div>
-                                )}
-
-                                {selectedSetting === 'Account' && (
+                                )} */}
+                                {/* {selectedSetting === 'Account' && (
                                     <div>
                                         <div className={styles.label}>
                                             Account content
@@ -251,7 +248,7 @@ export function MenuButton() {
                                         <div>Email</div>
                                         <div>Password</div>
                                     </div>
-                                )}
+                                )} */}
                             </div>
                         </div>
                     </div>
