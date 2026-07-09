@@ -12,10 +12,7 @@ export function Modal({ children, onClose }: ModalProps) {
 
     useEffect(() => {
         function handleClose(event: MouseEvent) {
-            if (
-                modalRef.current &&
-                !modalRef.current.contains(event.target as Node)
-            ) {
+            if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
                 console.log('close');
 
                 if (onClose) {
@@ -46,7 +43,7 @@ export function Modal({ children, onClose }: ModalProps) {
                         <div className={styles.content}>{children}</div>
                     </div>
                 </div>,
-                document.body
+                document.body,
             )}
         </>
     );

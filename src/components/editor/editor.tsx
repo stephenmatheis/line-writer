@@ -1,13 +1,6 @@
 // https://chatgpt.com/share/ee4b1b02-bc03-46cf-bc2c-6c943f386782
 
-import {
-    ChangeEvent,
-    ClipboardEvent,
-    useState,
-    useRef,
-    useEffect,
-    Fragment,
-} from 'react';
+import { ChangeEvent, ClipboardEvent, useState, useRef, useEffect, Fragment } from 'react';
 import { StatusBar } from '@/components/statusbar';
 import styles from './editor.module.scss';
 
@@ -33,18 +26,14 @@ export function Editor() {
         const target = event.target as HTMLTextAreaElement;
         const start = target.selectionStart;
         const end = target.selectionEnd;
-        const newContent =
-            content.slice(0, start) + plainText + content.slice(end);
+        const newContent = content.slice(0, start) + plainText + content.slice(end);
 
         localStorage.setItem('note', newContent);
 
         setContent(newContent);
 
         setTimeout(() => {
-            target.setSelectionRange(
-                start + plainText.length,
-                start + plainText.length
-            );
+            target.setSelectionRange(start + plainText.length, start + plainText.length);
 
             resize(event.target as HTMLElement);
 
@@ -86,8 +75,7 @@ export function Editor() {
     }, [cursorPos]);
 
     useEffect(() => {
-        const chars =
-            window.innerWidth < 404 ? 35 : window.innerWidth < 700 ? 40 : 70;
+        const chars = window.innerWidth < 404 ? 35 : window.innerWidth < 700 ? 40 : 70;
 
         if (content.length <= chars) {
             return;
@@ -100,10 +88,7 @@ export function Editor() {
         setTimeout(() => {
             if (!textAreaRef.current) return;
 
-            textAreaRef.current.setSelectionRange(
-                textAreaRef.current.value.length,
-                textAreaRef.current.value.length
-            );
+            textAreaRef.current.setSelectionRange(textAreaRef.current.value.length, textAreaRef.current.value.length);
 
             resize(textAreaRef.current);
 
@@ -114,10 +99,7 @@ export function Editor() {
         window.addEventListener('click', focus);
 
         function focus(event: Event) {
-            if (
-                textAreaRef.current &&
-                !textAreaRef.current.contains(event.target as Node)
-            ) {
+            if (textAreaRef.current && !textAreaRef.current.contains(event.target as Node)) {
                 if (window.getSelection) {
                     window.getSelection()?.removeAllRanges();
                 }

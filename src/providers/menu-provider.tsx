@@ -1,14 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 
-import {
-    createContext,
-    Dispatch,
-    SetStateAction,
-    useContext,
-    useEffect,
-    useState,
-    ReactNode,
-} from 'react';
+import { createContext, Dispatch, SetStateAction, useContext, useEffect, useState, ReactNode } from 'react';
 
 type MenuProviderProps = {
     children?: ReactNode;
