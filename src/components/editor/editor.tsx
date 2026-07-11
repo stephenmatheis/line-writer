@@ -123,6 +123,12 @@ export function Editor() {
         window.addEventListener('click', focus);
 
         function focus(event: Event) {
+            // other UI (command palette, future modals) opts out of the
+            // always-refocus-the-editor behavior with this attribute
+            if (event.target instanceof Element && event.target.closest('[data-no-refocus]')) {
+                return;
+            }
+
             if (textAreaRef.current && !textAreaRef.current.contains(event.target as Node)) {
                 if (window.getSelection) {
                     window.getSelection()?.removeAllRanges();
