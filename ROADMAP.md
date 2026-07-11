@@ -2,7 +2,7 @@
 
 Feature ideas, roughly in the order they came up. Nothing here is committed to yet.
 
-## 1. Smarter focus highlighting
+## 1. Smarter focus highlighting — DONE (went with b, visual lines)
 
 Current behavior: everything after the last punctuation mark (`.` `!` `?`) is the
 *current* sentence and stays dark; everything before it is grayed out to keep focus
@@ -25,7 +25,7 @@ Ambitious. Start with the obvious:
 - HJKL movement
 - Motions with counts and operators (e.g. `10j`, `dd`)
 
-## 3. Command palette
+## 3. Command palette — v1 SHIPPED (shell + theme, copy note, share URL; still to do: notes management, search, customize, AI)
 
 Invoked with `cmd/ctrl+shift+p` like most systems use these days. Undecided whether
 to also wire it to vim's `shift+;` (`:`) or keep those separate.
