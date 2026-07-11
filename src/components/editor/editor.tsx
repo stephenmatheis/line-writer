@@ -1,6 +1,4 @@
-// https://chatgpt.com/share/ee4b1b02-bc03-46cf-bc2c-6c943f386782
-
-import { ChangeEvent, ClipboardEvent, useState, useRef, useEffect, Fragment } from 'react';
+import { ChangeEvent, useState, useRef, useEffect, useLayoutEffect, Fragment } from 'react';
 import styles from './editor.module.scss';
 
 export function Editor() {
@@ -16,34 +14,9 @@ export function Editor() {
 
         setContent(newText);
         setCursorPos(event.target.selectionStart || 0);
-        resize(event.target);
-    }
-
-    function handlePaste(event: ClipboardEvent<HTMLTextAreaElement>) {
-        event.preventDefault();
-
-        const plainText = event.clipboardData.getData('text/plain');
-        const target = event.target as HTMLTextAreaElement;
-        const start = target.selectionStart;
-        const end = target.selectionEnd;
-        const newContent = content.slice(0, start) + plainText + content.slice(end);
-
-        localStorage.setItem('note', newContent);
-
-        setContent(newContent);
-
-        setTimeout(() => {
-            target.setSelectionRange(start + plainText.length, start + plainText.length);
-
-            resize(event.target as HTMLElement);
-
-            scrollBodyToBottom();
-        }, 0);
     }
 
     function resize(node: HTMLElement) {
-        // scrollHeight never reports smaller than the current box, so reset to
-        // auto first or the height can only ever grow
         node.style.height = 'auto';
         node.style.height = `${node.scrollHeight}px`;
     }
@@ -71,17 +44,20 @@ export function Editor() {
         });
     }
 
-    useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            if (!textAreaRef.current) return;
-
-            textAreaRef.current.setSelectionRange(textAreaRef.current.value.length, textAreaRef.current.value.length);
-
-            console.log('here');
+    // Resize and recenter before paint on every content change, no matter how
+    // it happened: typing, Enter, paste, or the initial mount.
+    useLayoutEffect(() => {
+        if (textAreaRef.current) {
             resize(textAreaRef.current);
+        }
 
-            scrollBodyToBottom();
-        }, 0);
+        scrollBodyToBottom();
+    }, [content]);
+
+    useEffect(() => {
+        if (textAreaRef.current) {
+            textAreaRef.current.setSelectionRange(textAreaRef.current.value.length, textAreaRef.current.value.length);
+        }
 
         if (editorRef.current) {
             editorRef.current.style.opacity = '1';
@@ -102,10 +78,6 @@ export function Editor() {
 
         return () => {
             window.removeEventListener('click', focus);
-
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-            }
         };
     }, []);
 
@@ -116,16 +88,6 @@ export function Editor() {
         }
     }, [cursorPos]);
 
-    useEffect(() => {
-        const chars = window.innerWidth < 404 ? 35 : window.innerWidth < 700 ? 40 : 20;
-
-        if (content.length <= chars) {
-            return;
-        }
-
-        scrollBodyToBottom();
-    }, [content]);
-
     return (
         <div ref={editorRef} className={styles.editor} style={{ opacity: '0' }}>
             <div className={styles.overlay} aria-hidden="true">
@@ -135,7 +97,6 @@ export function Editor() {
                 ref={textAreaRef}
                 value={content}
                 onChange={handleInput}
-                onPaste={handlePaste}
                 // autoFocus
                 rows={1}
                 spellCheck={false}
