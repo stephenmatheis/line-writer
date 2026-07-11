@@ -2,15 +2,13 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    width: 100%;
     margin: 0 auto;
-
-    // background-color: #ff000030;
+    background-color: #ff000030;
 
     &,
     .overlay,
     textarea {
-        width: 70ch;
+        width: 20ch;
     }
 
     @media (max-width: 700px) {
@@ -38,7 +36,7 @@
         position: absolute;
         top: 0;
         left: 0;
-        width: 100%;
+        // width: 100%;
         white-space: pre-wrap;
         word-wrap: break-word;
         pointer-events: none;
@@ -61,16 +59,13 @@
         border: none;
         padding: 0;
         caret-color: var(--color);
+        white-space: pre-wrap;
         overflow: hidden;
         z-index: 2;
-
-        white-space: pre-wrap;
     }
 }
 
 .bar {
-    display: none;
-
     position: fixed;
     width: 100vw;
     height: 2px;

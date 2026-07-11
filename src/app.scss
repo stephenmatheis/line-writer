@@ -1,5 +1,31 @@
+@font-face {
+    font-family: 'DepartureMono';
+    src: url(/fonts/DepartureMono-Regular.woff2) format(woff2);
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PureProg';
+    src: url(/fonts/pureprog.woff2) format(woff2);
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'PaperMono';
+    src: url(/fonts/PaperMono-Regular.woff2) format(woff2);
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
 :root {
-    --font-family: monospace;
+    --font-family: 'DepartureMono', monospace;
+    // --font-family: monospace;
+    --font-size: 16px;
     --color: #242424;
     --color-dark: #1e1e1e;
     --color-light: #505050;
@@ -11,6 +37,7 @@
     --divider-color: #eeeeee;
 
     font-family: var(--font-family);
+    font-size: 22px;
     color: var(--color);
     background-color: var(--background-color);
 }
@@ -40,5 +67,4 @@ body {
     margin: 0;
     padding-top: calc(50dvh - 24px);
     padding-bottom: calc(50dvh - 24px);
-    font-size: 16px;
 }

@@ -1,12 +1,12 @@
 // https://chatgpt.com/share/ee4b1b02-bc03-46cf-bc2c-6c943f386782
 
 import { ChangeEvent, ClipboardEvent, useState, useRef, useEffect, Fragment } from 'react';
-import { StatusBar } from '@/components/statusbar';
 import styles from './editor.module.scss';
 
 export function Editor() {
     const [content, setContent] = useState(localStorage.getItem('note') || '');
     const [cursorPos, setCursorPos] = useState(0);
+    const editorRef = useRef<HTMLDivElement>(null);
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
     function handleInput(event: ChangeEvent<HTMLTextAreaElement>) {
@@ -42,6 +42,8 @@ export function Editor() {
     }
 
     function resize(node: HTMLElement) {
+        // scrollHeight never reports smaller than the current box, so reset to
+        // auto first or the height can only ever grow
         node.style.height = 'auto';
         node.style.height = `${node.scrollHeight}px`;
     }
@@ -62,38 +64,28 @@ export function Editor() {
     }
 
     function scrollBodyToBottom() {
+        // console.log('SCROLL. Document scroll height:', document.documentElement.scrollHeight);
+
         window.scrollTo({
             top: document.documentElement.scrollHeight,
         });
     }
 
     useEffect(() => {
-        if (textAreaRef.current) {
-            textAreaRef.current.selectionStart = cursorPos;
-            textAreaRef.current.selectionEnd = cursorPos;
-        }
-    }, [cursorPos]);
-
-    useEffect(() => {
-        const chars = window.innerWidth < 404 ? 35 : window.innerWidth < 700 ? 40 : 70;
-
-        if (content.length <= chars) {
-            return;
-        }
-
-        scrollBodyToBottom();
-    }, [content]);
-
-    useEffect(() => {
-        setTimeout(() => {
+        const timeoutId = setTimeout(() => {
             if (!textAreaRef.current) return;
 
             textAreaRef.current.setSelectionRange(textAreaRef.current.value.length, textAreaRef.current.value.length);
 
+            console.log('here');
             resize(textAreaRef.current);
 
             scrollBodyToBottom();
         }, 0);
+
+        if (editorRef.current) {
+            editorRef.current.style.opacity = '1';
+        }
 
         // FIXME: Scrolls on mobile when clicking menu
         window.addEventListener('click', focus);
@@ -108,29 +100,50 @@ export function Editor() {
             textAreaRef.current?.focus();
         }
 
-        return () => window.removeEventListener('click', focus);
+        return () => {
+            window.removeEventListener('click', focus);
+
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+        };
     }, []);
 
-    return (
-        <>
-            <div className={styles.editor}>
-                <div className={styles.overlay} aria-hidden="true">
-                    {highlightText(content)}
-                </div>
-                <textarea
-                    ref={textAreaRef}
-                    value={content}
-                    onChange={handleInput}
-                    onPaste={handlePaste}
-                    autoFocus
-                    rows={1}
-                    spellCheck={false}
-                />
+    useEffect(() => {
+        if (textAreaRef.current) {
+            textAreaRef.current.selectionStart = cursorPos;
+            textAreaRef.current.selectionEnd = cursorPos;
+        }
+    }, [cursorPos]);
 
-                <div className={styles.bar} />
+    useEffect(() => {
+        const chars = window.innerWidth < 404 ? 35 : window.innerWidth < 700 ? 40 : 20;
+
+        if (content.length <= chars) {
+            return;
+        }
+
+        scrollBodyToBottom();
+    }, [content]);
+
+    return (
+        <div ref={editorRef} className={styles.editor} style={{ opacity: '0' }}>
+            <div className={styles.overlay} aria-hidden="true">
+                {highlightText(content)}
             </div>
-            <StatusBar content={content} />
-        </>
+            <textarea
+                ref={textAreaRef}
+                value={content}
+                onChange={handleInput}
+                onPaste={handlePaste}
+                // autoFocus
+                rows={1}
+                spellCheck={false}
+                id="editor"
+            />
+
+            <div className={styles.bar} />
+        </div>
     );
 }
 
