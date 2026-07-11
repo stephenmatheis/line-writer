@@ -36,9 +36,6 @@ export function Editor() {
         );
     }
 
-    // A textarea can't host a DOM Range, so to find the caret's visual line we
-    // re-lay-out the text before the caret in a hidden div with identical
-    // metrics and see where a marker span lands.
     function scrollCaretLineToCenter(textArea: HTMLTextAreaElement, caret: number) {
         const cs = getComputedStyle(textArea);
         const mirror = document.createElement('div');
@@ -60,8 +57,7 @@ export function Editor() {
         mirror.appendChild(marker);
         document.body.appendChild(mirror);
 
-        // offsetTop is the top of the marker's glyph box, which sits half-leading
-        // below the top of its line box; snap it to a line index
+        // glyph height is not line height - get top of line glyph is in
         const lineHeight = parseFloat(cs.lineHeight);
         const caretLine = Math.round(marker.offsetTop / lineHeight);
 
@@ -75,8 +71,6 @@ export function Editor() {
         });
     }
 
-    // Resize and recenter before paint on every content change, no matter how
-    // it happened: typing, Enter, paste, or the initial mount.
     useLayoutEffect(() => {
         if (textAreaRef.current) {
             resize(textAreaRef.current);
