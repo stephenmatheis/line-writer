@@ -3,7 +3,7 @@ import styles from './editor.module.scss';
 
 export function Editor() {
     const [content, setContent] = useState(localStorage.getItem('note') || '');
-    const [cursorPos, setCursorPos] = useState(0);
+    const [cursorPos, setCursorPos] = useState(content.length);
     const editorRef = useRef<HTMLDivElement>(null);
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -36,11 +36,42 @@ export function Editor() {
         );
     }
 
-    function scrollBodyToBottom() {
-        // console.log('SCROLL. Document scroll height:', document.documentElement.scrollHeight);
+    // A textarea can't host a DOM Range, so to find the caret's visual line we
+    // re-lay-out the text before the caret in a hidden div with identical
+    // metrics and see where a marker span lands.
+    function scrollCaretLineToCenter(textArea: HTMLTextAreaElement, caret: number) {
+        const cs = getComputedStyle(textArea);
+        const mirror = document.createElement('div');
+
+        mirror.style.position = 'absolute';
+        mirror.style.visibility = 'hidden';
+        mirror.style.boxSizing = 'border-box';
+        mirror.style.width = `${textArea.clientWidth}px`;
+        mirror.style.fontFamily = cs.fontFamily;
+        mirror.style.fontSize = cs.fontSize;
+        mirror.style.lineHeight = cs.lineHeight;
+        mirror.style.whiteSpace = 'pre-wrap';
+        mirror.style.overflowWrap = 'break-word';
+        mirror.textContent = textArea.value.slice(0, caret);
+
+        const marker = document.createElement('span');
+
+        marker.textContent = '​';
+        mirror.appendChild(marker);
+        document.body.appendChild(mirror);
+
+        // offsetTop is the top of the marker's glyph box, which sits half-leading
+        // below the top of its line box; snap it to a line index
+        const lineHeight = parseFloat(cs.lineHeight);
+        const caretLine = Math.round(marker.offsetTop / lineHeight);
+
+        mirror.remove();
+
+        const caretLineCenter =
+            textArea.getBoundingClientRect().top + window.scrollY + caretLine * lineHeight + lineHeight / 2;
 
         window.scrollTo({
-            top: document.documentElement.scrollHeight,
+            top: caretLineCenter - window.innerHeight / 2,
         });
     }
 
@@ -49,16 +80,11 @@ export function Editor() {
     useLayoutEffect(() => {
         if (textAreaRef.current) {
             resize(textAreaRef.current);
+            scrollCaretLineToCenter(textAreaRef.current, cursorPos);
         }
-
-        scrollBodyToBottom();
-    }, [content]);
+    }, [content, cursorPos]);
 
     useEffect(() => {
-        if (textAreaRef.current) {
-            textAreaRef.current.setSelectionRange(textAreaRef.current.value.length, textAreaRef.current.value.length);
-        }
-
         if (editorRef.current) {
             editorRef.current.style.opacity = '1';
         }
