@@ -4,9 +4,6 @@
     flex-direction: column;
     margin: 0 auto;
 
-    // the palette's Debug guides toggle turns this red tint (and the
-    // center bar below) on - off by default, this is a layout aid, not
-    // part of the writing experience
     :global(html[data-debug-guides='true']) & {
         background-color: #ff000030;
     }
@@ -14,7 +11,6 @@
     &,
     .overlay,
     textarea {
-        // the palette's Width picker
         width: var(--editor-width);
     }
 
@@ -36,8 +32,6 @@
 
     .overlay,
     textarea {
-        // --line-height is a multiplier of 1rlh, the font's natural line
-        // height at the current size (see app.scss)
         line-height: calc(1rlh * var(--line-height));
     }
 

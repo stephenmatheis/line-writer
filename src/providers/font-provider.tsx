@@ -7,7 +7,6 @@ export type FontSize = 'small' | 'medium' | 'large';
 export type LineHeight = '1' | '1.25' | '1.5' | '2' | '3';
 export type Width = 'narrow' | 'normal' | 'wide';
 
-// unitless multipliers of the font size, like CSS line-height numbers
 export const LINE_HEIGHTS: LineHeight[] = ['1', '1.25', '1.5', '2', '3'];
 export const WIDTHS: Width[] = ['narrow', 'normal', 'wide'];
 
@@ -45,7 +44,6 @@ export function FontProvider({ children }: { children: ReactNode }) {
     const [lineHeight, setLineHeightState] = useState<LineHeight>(() => {
         const saved = localStorage.getItem('line-height');
 
-        // older builds stored names like 'relaxed' - fall back to the default
         return LINE_HEIGHTS.includes(saved as LineHeight) ? (saved as LineHeight) : '2';
     });
     const [width, setWidthState] = useState<Width>(() => (localStorage.getItem('width') as Width) || 'normal');

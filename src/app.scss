@@ -23,12 +23,9 @@
 }
 
 :root {
-    // fallbacks matching the defaults theme-init.js stamps
-    // (departure-mono, medium, line height 2, normal width)
     --font-family: 'DepartureMono', monospace;
     --font-size: 16.5px;
     --line-height: 2;
-    --editor-width: 60ch;
 
     font-family: var(--font-family);
     font-size: var(--font-size);
@@ -36,9 +33,6 @@
     background-color: var(--background-color);
 }
 
-// The palette's Font and Font size pickers set these attributes on <html>,
-// and theme-init.js restores them before first paint. No attribute means
-// the :root defaults above (DepartureMono at 22px).
 [data-font='pureprog'] {
     --font-family: 'PureProg', monospace;
 }
@@ -63,8 +57,6 @@
     --font-size: 24px;
 }
 
-// DepartureMono's designers recommend sizes in multiples of 11 -
-// these two-attribute rules win over the generic sizes above
 [data-font='departure-mono'][data-font-size='small'] {
     --font-size: 11px;
 }
@@ -77,10 +69,6 @@
     --font-size: 22px;
 }
 
-// Multipliers of the font's *natural* line height, not the font size.
-// The root's line-height stays 'normal', so 1rlh is the font's real em-box
-// height at the current size (DepartureMono at 22px is 28px tall, not 22)
-// and it re-resolves on its own whenever the font or size changes.
 [data-line-height='1'] {
     --line-height: 1;
 }
@@ -101,9 +89,12 @@
     --line-height: 3;
 }
 
-// the palette's Width picker
 [data-width='narrow'] {
     --editor-width: 30ch;
+}
+
+[data-width='normal'] {
+    --editor-width: 60ch;
 }
 
 [data-width='wide'] {
@@ -141,10 +132,6 @@
 
 body {
     margin: 0;
-
-    // half a line short of half the viewport, so any line - first or last -
-    // can land its center exactly on the middle of the screen; the line
-    // height in px is the multiplier times the font's natural line height
     padding-top: calc(50dvh - 1rlh * var(--line-height) / 2);
     padding-bottom: calc(50dvh - 1rlh * var(--line-height) / 2);
 }
