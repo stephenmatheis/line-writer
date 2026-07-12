@@ -55,7 +55,7 @@ test.describe('command palette', () => {
         await openPalette(page);
         await page.keyboard.type('anything at all');
 
-        expect(await page.evaluate(() => localStorage.getItem('note'))).toBe(NOTE);
+        await expect(page.locator('textarea#editor')).toHaveValue(NOTE);
     });
 
     test('arrow keys wrap through the list', async ({ page }) => {
@@ -117,36 +117,35 @@ test.describe('share links', () => {
         await freshPage.goto(url);
         await freshPage.waitForSelector('textarea#editor');
 
-        expect(await freshPage.evaluate(() => localStorage.getItem('note'))).toBe(NOTE);
+        await expect(freshPage.locator('textarea#editor')).toHaveValue(NOTE);
         expect(await freshPage.evaluate(() => location.hash)).toBe('');
 
         await freshContext.close();
     });
 
-    test('asks before replacing a differing note', async ({ page, browser, baseURL }) => {
+    test('imports as a new note, never on top of an existing one', async ({ page, browser, baseURL }) => {
         const url = await copyShareLink(page);
         // manually created contexts don't inherit the config's baseURL
         const otherContext = await browser.newContext({ baseURL });
         const otherPage = await otherContext.newPage();
 
         await otherPage.goto('/');
-        await otherPage.evaluate(() => localStorage.setItem('note', 'my precious existing note'));
-
-        let sawConfirm = false;
-
-        otherPage.on('dialog', (dialog) => {
-            sawConfirm = true;
-
-            void dialog.dismiss();
-        });
+        await otherPage.waitForSelector('textarea#editor');
+        await otherPage.keyboard.type('my precious existing note');
 
         // goto with only a hash change is same-document; reload to remount
         await otherPage.goto(url);
         await otherPage.reload();
         await otherPage.waitForSelector('textarea#editor');
 
-        expect(sawConfirm).toBe(true);
-        expect(await otherPage.evaluate(() => localStorage.getItem('note'))).toBe('my precious existing note');
+        // the shared note is open, and the note that was there survived
+        await expect(otherPage.locator('textarea#editor')).toHaveValue(NOTE);
+
+        const titles = await otherPage.evaluate(() =>
+            JSON.parse(localStorage.getItem('notes') || '[]').map((note: { title: string }) => note.title),
+        );
+
+        expect(titles).toContain('my precious existing note');
 
         await otherContext.close();
     });

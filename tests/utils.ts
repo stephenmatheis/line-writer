@@ -1,10 +1,14 @@
 import { Page } from '@playwright/test';
 
 // Seed the note (and a known theme) into localStorage, then reload so the
-// editor mounts from that state with the caret at the end.
+// editor mounts from that state with the caret at the end. Seeding through
+// the legacy single-note key means every test also exercises the migration
+// into the notes index. The clear() matters: the first goto already ran the
+// migration, and a stale index would shadow the seeded key.
 export async function seedNote(page: Page, note: string) {
     await page.goto('/');
     await page.evaluate((value) => {
+        localStorage.clear();
         localStorage.setItem('note', value);
         localStorage.setItem('theme', 'system');
     }, note);

@@ -3,47 +3,109 @@ import { Editor } from '@/components/editor';
 import { CommandPalette, Command } from '@/components/command-palette';
 import { ThemeProvider, useTheme, Theme } from './providers/theme-provider';
 import { decodeNote, encodeNote } from '@/lib/share';
+import { createNote, deleteNote, ensureNotes, listNotes, noteContent, setActiveNote } from '@/lib/notes';
 
-function Commands() {
+function Commands({ activeId, onActiveIdChange }: { activeId: string; onActiveIdChange: (id: string) => void }) {
     const { theme, setTheme } = useTheme();
 
-    const commands: Command[] = [
-        ...(['dark', 'light', 'system'] as Theme[]).map((mode) => ({
-            id: `theme-${mode}`,
-            label: `Theme: ${mode[0].toUpperCase()}${mode.slice(1)}`,
-            active: theme === mode,
-            run: () => setTheme(mode),
-        })),
-        {
-            id: 'copy-share-link',
-            label: 'Copy share link',
-            hint: 'with encoded url',
-            run: async () => {
-                const note = localStorage.getItem('note') || '';
-                const url = `${location.origin}${location.pathname}#n:${await encodeNote(note)}`;
+    // built fresh every time the palette opens, so note titles are current
+    function getCommands(): Command[] {
+        const notes = listNotes();
 
-                await navigator.clipboard.writeText(url);
+        return [
+            {
+                id: 'new-note',
+                label: 'New note',
+                run: () => onActiveIdChange(createNote()),
             },
-        },
-        {
-            id: 'copy-note',
-            label: 'Copy note',
-            hint: 'to clipboard',
-            run: async () => {
-                await navigator.clipboard.writeText(localStorage.getItem('note') || '');
+            {
+                id: 'open-note',
+                label: 'Open note...',
+                hint: `${notes.length} note${notes.length === 1 ? '' : 's'}`,
+                run: () =>
+                    notes.map((note) => ({
+                        id: `open-${note.id}`,
+                        label: note.title,
+                        hint: new Date(note.updatedAt).toLocaleDateString(),
+                        active: note.id === activeId,
+                        run: () => {
+                            setActiveNote(note.id);
+                            onActiveIdChange(note.id);
+                        },
+                    })),
             },
-        },
-    ];
+            {
+                id: 'delete-note',
+                label: 'Delete note...',
+                run: () =>
+                    notes.map((note) => ({
+                        id: `delete-${note.id}`,
+                        label: note.title,
+                        hint: new Date(note.updatedAt).toLocaleDateString(),
+                        active: note.id === activeId,
+                        run: () => {
+                            if (!window.confirm(`Delete "${note.title}"?`)) {
+                                return;
+                            }
 
-    return <CommandPalette commands={commands} />;
+                            onActiveIdChange(deleteNote(note.id));
+                        },
+                    })),
+            },
+            {
+                id: 'export-note',
+                label: 'Export note',
+                hint: 'download .txt',
+                run: () => {
+                    const title = notes.find((note) => note.id === activeId)?.title || 'note';
+                    const blob = new Blob([noteContent(activeId)], { type: 'text/plain' });
+                    const link = document.createElement('a');
+
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `${title}.txt`;
+                    link.click();
+
+                    URL.revokeObjectURL(link.href);
+                },
+            },
+            ...(['dark', 'light', 'system'] as Theme[]).map((mode) => ({
+                id: `theme-${mode}`,
+                label: `Theme: ${mode[0].toUpperCase()}${mode.slice(1)}`,
+                active: theme === mode,
+                run: () => setTheme(mode),
+            })),
+            {
+                id: 'copy-share-link',
+                label: 'Copy share link',
+                hint: 'with encoded url',
+                run: async () => {
+                    const url = `${location.origin}${location.pathname}#n:${await encodeNote(noteContent(activeId))}`;
+
+                    await navigator.clipboard.writeText(url);
+                },
+            },
+            {
+                id: 'copy-note',
+                label: 'Copy note',
+                hint: 'to clipboard',
+                run: async () => {
+                    await navigator.clipboard.writeText(noteContent(activeId));
+                },
+            },
+        ];
+    }
+
+    return <CommandPalette getCommands={getCommands} />;
 }
 
 export default function App() {
+    const [activeId, setActiveId] = useState(() => ensureNotes());
     const [ready, setReady] = useState(() => !location.hash.startsWith('#n:'));
     const importStarted = useRef(false);
 
-    // A share link arrived: decode the note out of the hash before the editor
-    // mounts, so the editor initializes from the already-updated localStorage
+    // A share link arrived: decode it before the editor mounts. The shared
+    // note comes in as its own new note - never on top of something you
+    // already wrote
     useEffect(() => {
         if (ready || importStarted.current) return;
 
@@ -53,17 +115,10 @@ export default function App() {
         void (async () => {
             try {
                 const imported = await decodeNote(location.hash.slice('#n:'.length));
-                const existing = localStorage.getItem('note') || '';
 
-                if (
-                    !existing ||
-                    existing === imported ||
-                    window.confirm('Replace your current note with the shared one?')
-                ) {
-                    localStorage.setItem('note', imported);
-                }
+                setActiveId(createNote(imported));
             } catch {
-                // bad or truncated payload - keep the existing note
+                // bad or truncated payload - keep what we have
             }
 
             history.replaceState(null, '', location.pathname + location.search);
@@ -74,8 +129,8 @@ export default function App() {
 
     return (
         <ThemeProvider>
-            {ready && <Editor />}
-            <Commands />
+            {ready && <Editor key={activeId} noteId={activeId} />}
+            <Commands activeId={activeId} onActiveIdChange={setActiveId} />
         </ThemeProvider>
     );
 }

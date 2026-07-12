@@ -1,8 +1,11 @@
 import { ChangeEvent, useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { noteContent, saveNote } from '@/lib/notes';
 import styles from './editor.module.scss';
 
-export function Editor() {
-    const [content, setContent] = useState(localStorage.getItem('note') || '');
+// One editor edits one note. The app remounts it (key={noteId}) when the
+// active note changes, so all the state below starts over from storage.
+export function Editor({ noteId }: { noteId: string }) {
+    const [content, setContent] = useState(noteContent(noteId));
     const [cursorPos, setCursorPos] = useState(content.length);
     const [focusRange, setFocusRange] = useState({ start: 0, end: 0 });
     const editorRef = useRef<HTMLDivElement>(null);
@@ -11,7 +14,7 @@ export function Editor() {
     function handleInput(event: ChangeEvent<HTMLTextAreaElement>) {
         const newText = event.target.value;
 
-        localStorage.setItem('note', newText);
+        saveNote(noteId, newText);
 
         setContent(newText);
         setCursorPos(event.target.selectionStart || 0);

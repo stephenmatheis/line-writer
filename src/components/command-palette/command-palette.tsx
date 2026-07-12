@@ -8,7 +8,9 @@ export type Command = {
     label: string;
     hint?: string;
     active?: boolean;
-    run: () => void | Promise<void>;
+    // a command usually does something, but it can hand back a sub-list
+    // instead (like a note picker) - the palette shows it and stays open
+    run: () => void | Promise<void> | Command[];
 };
 
 // Case-insensitive subsequence match: every query char must appear in the
@@ -43,22 +45,25 @@ function fuzzyMatch(query: string, label: string) {
     return { positions, score };
 }
 
-export function CommandPalette({ commands }: { commands: Command[] }) {
+// commands are asked for at open time (not passed as a ready list) so
+// they're always fresh - note titles change with every keystroke
+export function CommandPalette({ getCommands }: { getCommands: () => Command[] }) {
     const [isOpen, setIsOpen] = useState(false);
+    const [commandList, setCommandList] = useState<Command[]>([]);
     const [query, setQuery] = useState('');
     const [selected, setSelected] = useState(0);
     const inputRef = useRef<HTMLInputElement>(null);
     const listRef = useRef<HTMLDivElement>(null);
 
     const matches = query
-        ? commands
+        ? commandList
               .flatMap((command) => {
                   const match = fuzzyMatch(query, command.label);
 
                   return match ? [{ command, ...match }] : [];
               })
               .sort((a, b) => b.score - a.score)
-        : commands.map((command) => ({ command, positions: [] as number[] }));
+        : commandList.map((command) => ({ command, positions: [] as number[] }));
 
     // typing can shrink the list out from under the selection
     const selectedIndex = Math.min(selected, matches.length - 1);
@@ -66,6 +71,7 @@ export function CommandPalette({ commands }: { commands: Command[] }) {
     // reset the query in the same render that opens, not an effect later -
     // an effect leaves a frame where typing appends to the previous query
     function open() {
+        setCommandList(getCommands());
         setQuery('');
         setSelected(0);
         setIsOpen(true);
@@ -102,9 +108,18 @@ export function CommandPalette({ commands }: { commands: Command[] }) {
     }, [selectedIndex, query]);
 
     function runCommand(command: Command) {
-        setIsOpen(false);
+        const result = command.run();
 
-        void command.run();
+        // drill into a sub-list instead of closing
+        if (Array.isArray(result)) {
+            setCommandList(result);
+            setQuery('');
+            setSelected(0);
+
+            return;
+        }
+
+        setIsOpen(false);
     }
 
     function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
