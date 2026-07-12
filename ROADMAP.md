@@ -25,7 +25,7 @@ Ambitious. Start with the obvious:
 - HJKL movement
 - Motions with counts and operators (e.g. `10j`, `dd`)
 
-## 3. Command palette — v1 SHIPPED (shell + theme, copy note, share URL), notes management SHIPPED (new / open / delete / export, share links import as new notes; still to do: search, customize, AI)
+## 3. Command palette — v1 SHIPPED (shell + theme, copy note, share URL), notes management SHIPPED (new / open / delete / export, share links import as new notes), customize SHIPPED (font + font size pickers; still to do: search, colors, AI)
 
 Invoked with `cmd/ctrl+shift+p` like most systems use these days. Undecided whether
 to also wire it to vim's `shift+;` (`:`) or keep those separate.

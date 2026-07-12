@@ -1,5 +1,17 @@
 import { Page } from '@playwright/test';
 
+export async function openPalette(page: Page) {
+    await page.keyboard.press('ControlOrMeta+Shift+KeyP');
+    await page.waitForSelector('[data-no-refocus] input');
+}
+
+// filter to a single command and run it; works inside sub-lists too since
+// the palette stays open after drilling in
+export async function runCommand(page: Page, query: string) {
+    await page.keyboard.type(query);
+    await page.keyboard.press('Enter');
+}
+
 // Seed the note (and a known theme) into localStorage, then reload so the
 // editor mounts from that state with the caret at the end. Seeding through
 // the legacy single-note key means every test also exercises the migration

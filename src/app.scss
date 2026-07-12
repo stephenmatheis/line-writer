@@ -32,6 +32,29 @@
     background-color: var(--background-color);
 }
 
+// The palette's Font and Font size pickers set these attributes on <html>,
+// and theme-init.js restores them before first paint. No attribute means
+// the :root defaults above (DepartureMono at 22px).
+[data-font='pureprog'] {
+    --font-family: 'PureProg', monospace;
+}
+
+[data-font='paper-mono'] {
+    --font-family: 'PaperMono', monospace;
+}
+
+[data-font='monospace'] {
+    --font-family: monospace;
+}
+
+[data-font-size='small'] {
+    --font-size: 18px;
+}
+
+[data-font-size='large'] {
+    --font-size: 26px;
+}
+
 [data-theme='light'] {
     --color: #242424;
     --color-dark: #1e1e1e;

@@ -1,10 +1,12 @@
 import { ChangeEvent, useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { noteContent, saveNote } from '@/lib/notes';
+import { useFont } from '@/providers/font-provider';
 import styles from './editor.module.scss';
 
 // One editor edits one note. The app remounts it (key={noteId}) when the
 // active note changes, so all the state below starts over from storage.
 export function Editor({ noteId }: { noteId: string }) {
+    const { font, fontSize } = useFont();
     const [content, setContent] = useState(noteContent(noteId));
     const [cursorPos, setCursorPos] = useState(content.length);
     const [focusRange, setFocusRange] = useState({ start: 0, end: 0 });
@@ -115,7 +117,9 @@ export function Editor({ noteId }: { noteId: string }) {
         setFocusRange((prev) =>
             prev.start === lineStart && prev.end === lineEnd ? prev : { start: lineStart, end: lineEnd },
         );
-    }, [content, cursorPos]);
+        // font and fontSize matter here too: changing either moves every wrap
+        // point and the ch-based width, so everything needs measuring again
+    }, [content, cursorPos, font, fontSize]);
 
     useEffect(() => {
         if (editorRef.current) {

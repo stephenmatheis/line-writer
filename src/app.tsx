@@ -2,11 +2,26 @@ import { useEffect, useRef, useState } from 'react';
 import { Editor } from '@/components/editor';
 import { CommandPalette, Command } from '@/components/command-palette';
 import { ThemeProvider, useTheme, Theme } from './providers/theme-provider';
+import { FontProvider, useFont, Font, FontSize } from './providers/font-provider';
 import { decodeNote, encodeNote } from '@/lib/share';
 import { createNote, deleteNote, ensureNotes, listNotes, noteContent, setActiveNote } from '@/lib/notes';
 
+const FONTS: { id: Font; label: string }[] = [
+    { id: 'departure-mono', label: 'Departure Mono' },
+    { id: 'pureprog', label: 'PureProg' },
+    { id: 'paper-mono', label: 'Paper Mono' },
+    { id: 'monospace', label: 'System monospace' },
+];
+
+const SIZES: { id: FontSize; label: string; px: string }[] = [
+    { id: 'small', label: 'Small', px: '18px' },
+    { id: 'medium', label: 'Medium', px: '22px' },
+    { id: 'large', label: 'Large', px: '26px' },
+];
+
 function Commands({ activeId, onActiveIdChange }: { activeId: string; onActiveIdChange: (id: string) => void }) {
     const { theme, setTheme } = useTheme();
+    const { font, fontSize, setFont, setFontSize } = useFont();
 
     // built fresh every time the palette opens, so note titles are current
     function getCommands(): Command[] {
@@ -75,6 +90,31 @@ function Commands({ activeId, onActiveIdChange }: { activeId: string; onActiveId
                 run: () => setTheme(mode),
             })),
             {
+                id: 'font',
+                label: 'Font...',
+                hint: FONTS.find((option) => option.id === font)?.label,
+                run: () =>
+                    FONTS.map((option) => ({
+                        id: `font-${option.id}`,
+                        label: option.label,
+                        active: font === option.id,
+                        run: () => setFont(option.id),
+                    })),
+            },
+            {
+                id: 'font-size',
+                label: 'Font size...',
+                hint: SIZES.find((option) => option.id === fontSize)?.label,
+                run: () =>
+                    SIZES.map((option) => ({
+                        id: `font-size-${option.id}`,
+                        label: option.label,
+                        hint: option.px,
+                        active: fontSize === option.id,
+                        run: () => setFontSize(option.id),
+                    })),
+            },
+            {
                 id: 'copy-share-link',
                 label: 'Copy share link',
                 hint: 'with encoded url',
@@ -129,8 +169,10 @@ export default function App() {
 
     return (
         <ThemeProvider>
-            {ready && <Editor key={activeId} noteId={activeId} />}
-            <Commands activeId={activeId} onActiveIdChange={setActiveId} />
+            <FontProvider>
+                {ready && <Editor key={activeId} noteId={activeId} />}
+                <Commands activeId={activeId} onActiveIdChange={setActiveId} />
+            </FontProvider>
         </ThemeProvider>
     );
 }

@@ -1,22 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { seedNote } from './utils';
+import { seedNote, openPalette, runCommand } from './utils';
 
 const NOTE = 'groceries\nmilk\neggs';
-const paletteInput = '[data-no-refocus] input';
 
 type IndexEntry = { id: string; title: string };
-
-async function openPalette(page: import('@playwright/test').Page) {
-    await page.keyboard.press('ControlOrMeta+Shift+KeyP');
-    await page.waitForSelector(paletteInput);
-}
-
-// filter to a single command and run it; works for sub-lists too since the
-// palette stays open after drilling in
-async function runCommand(page: import('@playwright/test').Page, query: string) {
-    await page.keyboard.type(query);
-    await page.keyboard.press('Enter');
-}
 
 function notesIndex(page: import('@playwright/test').Page): Promise<IndexEntry[]> {
     return page.evaluate(() => JSON.parse(localStorage.getItem('notes') || '[]'));
