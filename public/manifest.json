@@ -11,5 +11,16 @@
     },
     "chrome_url_overrides": {
         "newtab": "./index.html"
-    }
+    },
+    "host_permissions": [
+        "https://huggingface.co/*",
+        "https://cdn-lfs.huggingface.co/*",
+        "https://cdn-lfs-us-1.hf.co/*"
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": ["onnx-wasm/*"],
+            "matches": ["chrome-extension://*/*"]
+        }
+    ]
 }

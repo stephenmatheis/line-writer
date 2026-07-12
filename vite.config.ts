@@ -1,6 +1,37 @@
-import { defineConfig } from 'vite-plus';
+import { defineConfig, type PluginOption } from 'vite-plus';
 import path from 'path';
+import fs from 'fs';
 import react from '@vitejs/plugin-react';
+
+// MV3 forbids remotely-hosted code, so the ONNX runtime's WASM binaries
+// (which @huggingface/transformers would otherwise fetch from jsDelivr at
+// runtime) are bundled into the extension build instead - see
+// src/lib/ai-worker.ts's wasmPaths override. Only needed for the built
+// extension bundle; `vp dev` never runs inside a real chrome.runtime
+// context, so nothing reads onnx-wasm/ there.
+const ONNX_WASM_FILES = [
+    'ort-wasm-simd-threaded.mjs',
+    'ort-wasm-simd-threaded.wasm',
+    'ort-wasm-simd-threaded.asyncify.mjs',
+    'ort-wasm-simd-threaded.asyncify.wasm',
+];
+
+function copyOnnxWasm(): PluginOption {
+    return {
+        name: 'copy-onnx-wasm',
+        apply: 'build',
+        writeBundle() {
+            const source = path.resolve(__dirname, 'node_modules/onnxruntime-web/dist');
+            const dest = path.resolve(__dirname, 'dist/onnx-wasm');
+
+            fs.mkdirSync(dest, { recursive: true });
+
+            for (const file of ONNX_WASM_FILES) {
+                fs.copyFileSync(path.join(source, file), path.join(dest, file));
+            }
+        },
+    };
+}
 
 export default defineConfig({
     staged: {
@@ -171,10 +202,20 @@ export default defineConfig({
         include: ['src/**/*.{test,spec}.{ts,tsx}'],
         passWithNoTests: true,
     },
-    plugins: [react()],
+    plugins: [react(), copyOnnxWasm()],
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './src'),
         },
+    },
+    // @huggingface/transformers has WASM-adjacent internals that Vite's
+    // dependency pre-bundler mishandles
+    optimizeDeps: {
+        exclude: ['@huggingface/transformers'],
+    },
+    // ai-worker.ts needs `import` support, which requires the ES module
+    // worker output format (the default 'iife' can't use it)
+    worker: {
+        format: 'es',
     },
 });

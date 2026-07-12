@@ -1,17 +1,46 @@
-import { ChangeEvent, useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { ChangeEvent, KeyboardEvent, SyntheticEvent, useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { noteContent, saveNote } from '@/lib/notes';
 import { useFont } from '@/providers/font-provider';
+import { useAI, type Action, type GenerateHandle } from '@/providers/ai-provider';
+import { SlashMenu, type SlashMenuHandle } from '@/components/slash-menu';
 import styles from './editor.module.scss';
+
+type SlashMenuState = {
+    // offset where "/" was typed (and prevented from landing in content) -
+    // also where generated text gets spliced in once an action runs
+    triggerStart: number;
+    position: { top: number; left: number };
+};
+
+type Generation = {
+    handle: GenerateHandle;
+    // content with the "/query" text already stripped back to an empty
+    // line, captured once - every chunk re-splices against this same base
+    // rather than the live (already-spliced) content
+    baseContent: string;
+    insertStart: number;
+    replaceEnd: number;
+    accumulated: string;
+};
 
 // One editor edits one note. The app remounts it (key={noteId}) when the
 // active note changes, so all the state below starts over from storage.
 export function Editor({ noteId }: { noteId: string }) {
     const { font, fontSize, lineHeight, width } = useFont();
+    const ai = useAI();
     const [content, setContent] = useState(noteContent(noteId));
     const [cursorPos, setCursorPos] = useState(content.length);
     const [focusRange, setFocusRange] = useState({ start: 0, end: 0 });
+    // most recent non-empty selection, independent of cursorPos - kept even
+    // after the caret later moves to an empty line to invoke the slash menu,
+    // so "Rewrite"/"Fix grammar" still know what text to act on
+    const [lastSelection, setLastSelection] = useState<{ start: number; end: number } | null>(null);
+    const [slashMenu, setSlashMenu] = useState<SlashMenuState | null>(null);
+    const [isGenerating, setIsGenerating] = useState(false);
     const editorRef = useRef<HTMLDivElement>(null);
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
+    const slashMenuHandleRef = useRef<SlashMenuHandle>(null);
+    const generationRef = useRef<Generation | null>(null);
 
     function handleInput(event: ChangeEvent<HTMLTextAreaElement>) {
         const newText = event.target.value;
@@ -20,6 +49,163 @@ export function Editor({ noteId }: { noteId: string }) {
 
         setContent(newText);
         setCursorPos(event.target.selectionStart || 0);
+    }
+
+    function handleSelect(event: SyntheticEvent<HTMLTextAreaElement>) {
+        const { selectionStart, selectionEnd } = event.currentTarget;
+
+        if (selectionStart !== selectionEnd) {
+            setLastSelection({ start: selectionStart, end: selectionEnd });
+        }
+
+        if (!slashMenu || isGenerating) return;
+
+        // still a collapsed caret sitting somewhere on the trigger's line?
+        const stillOnTriggerLine =
+            selectionStart === selectionEnd &&
+            selectionStart >= slashMenu.triggerStart &&
+            !content.slice(slashMenu.triggerStart, selectionStart).includes('\n');
+
+        if (!stillOnTriggerLine) {
+            setSlashMenu(null);
+        }
+    }
+
+    function openSlashMenu(triggerStart: number) {
+        if (!textAreaRef.current) return;
+
+        setSlashMenu({ triggerStart, position: measureCaretPoint(textAreaRef.current, content, triggerStart) });
+    }
+
+    function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+        if (isGenerating) {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                cancelGeneration();
+            }
+
+            return;
+        }
+
+        if (slashMenu) {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                setSlashMenu(null);
+
+                return;
+            }
+
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                event.preventDefault();
+                slashMenuHandleRef.current?.moveSelection(event.key === 'ArrowDown' ? 1 : -1);
+
+                return;
+            }
+
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                slashMenuHandleRef.current?.confirmSelection();
+
+                return;
+            }
+
+            // any other key (typing more of the query, backspace, ...)
+            // falls through and lands in content as usual
+            return;
+        }
+
+        if (event.key !== '/') return;
+
+        const { selectionStart, selectionEnd } = event.currentTarget;
+
+        if (selectionStart !== selectionEnd) return; // no active selection
+
+        const before = content.slice(0, selectionStart);
+        const after = content.slice(selectionStart);
+        const lineStart = before.lastIndexOf('\n') + 1;
+        const lineEndOffset = after.indexOf('\n');
+        const restOfLine = lineEndOffset === -1 ? after : after.slice(0, lineEndOffset);
+        const beforeOnLine = content.slice(lineStart, selectionStart);
+
+        if (beforeOnLine.trim() !== '' || restOfLine.trim() !== '') return; // not an otherwise-empty line
+
+        event.preventDefault(); // the "/" never actually lands in content
+        openSlashMenu(selectionStart);
+    }
+
+    async function handleSlashAction(action: Action) {
+        if (!slashMenu) return;
+
+        const removedLength = cursorPos - slashMenu.triggerStart;
+        const baseContent = content.slice(0, slashMenu.triggerStart) + content.slice(cursorPos);
+
+        let insertStart: number;
+        let replaceEnd: number;
+        let promptText: string;
+
+        if (action === 'continue') {
+            insertStart = slashMenu.triggerStart;
+            replaceEnd = slashMenu.triggerStart;
+            promptText = baseContent.slice(Math.max(0, insertStart - 2000), insertStart);
+        } else {
+            if (!lastSelection) return; // menu disables these without a selection
+
+            const shift = (offset: number) => (offset >= cursorPos ? offset - removedLength : offset);
+
+            insertStart = shift(lastSelection.start);
+            replaceEnd = shift(lastSelection.end);
+            promptText = content.slice(lastSelection.start, lastSelection.end);
+        }
+
+        setContent(baseContent);
+        setCursorPos(insertStart);
+        setIsGenerating(true);
+
+        const handle = ai.generate(action, promptText, (token) => {
+            const generation = generationRef.current;
+
+            if (!generation) return; // cancelled
+
+            const isFirstChunk = generation.accumulated === '';
+
+            generation.accumulated += token;
+
+            const spliced =
+                generation.baseContent.slice(0, generation.insertStart) +
+                generation.accumulated +
+                generation.baseContent.slice(generation.replaceEnd);
+
+            saveNote(noteId, spliced);
+            setContent(spliced);
+            setCursorPos(generation.insertStart + generation.accumulated.length);
+
+            // the menu's position was measured before any text streamed in;
+            // once the note starts changing under it, that position goes
+            // stale immediately, so close it on the first sign of output
+            if (isFirstChunk) setSlashMenu(null);
+        });
+
+        generationRef.current = { handle, baseContent, insertStart, replaceEnd, accumulated: '' };
+
+        try {
+            await handle.promise;
+        } catch {
+            // errored - nothing fancy for v1, just stop
+        } finally {
+            generationRef.current = null;
+            setIsGenerating(false);
+            setSlashMenu(null); // safety net if generation ended before any chunk arrived
+        }
+    }
+
+    function cancelGeneration() {
+        generationRef.current?.handle.cancel();
+        // optimistic unlock - don't wait for the worker's ack; ignore any
+        // chunks that trickle in after (generationRef is already cleared,
+        // and the onChunk callback above no-ops once it is)
+        generationRef.current = null;
+        setIsGenerating(false);
+        setSlashMenu(null);
     }
 
     function resize(node: HTMLElement) {
@@ -44,7 +230,7 @@ export function Editor({ noteId }: { noteId: string }) {
 
         // textarea displays an empty last line if the last char is a newline
         // add a zero-width space (u200b) to force that line to exist
-        const textNode = document.createTextNode(text + '\u200b');
+        const textNode = document.createTextNode(text + '​');
 
         mirror.appendChild(textNode);
         document.body.appendChild(mirror);
@@ -95,6 +281,48 @@ export function Editor({ noteId }: { noteId: string }) {
         mirror.remove();
 
         return { caretLine, lineStart, lineEnd, lineHeight };
+    }
+
+    // Same mirror-div idea as measureCaretLine, but returns a viewport
+    // pixel point (via a marker span's own rect) instead of a line index -
+    // measureCaretLine only ever needed relative line numbers, this needs
+    // real x/y to anchor the slash menu's portal.
+    function measureCaretPoint(textArea: HTMLTextAreaElement, text: string, caret: number) {
+        const cs = getComputedStyle(textArea);
+        const mirror = document.createElement('div');
+
+        mirror.style.position = 'absolute';
+        mirror.style.visibility = 'hidden';
+        mirror.style.boxSizing = 'border-box';
+        mirror.style.width = `${textArea.clientWidth}px`;
+        mirror.style.fontFamily = cs.fontFamily;
+        mirror.style.fontSize = cs.fontSize;
+        mirror.style.lineHeight = cs.lineHeight;
+        mirror.style.whiteSpace = 'pre-wrap';
+        mirror.style.overflowWrap = 'break-word';
+
+        mirror.appendChild(document.createTextNode(text.slice(0, caret)));
+
+        const marker = document.createElement('span');
+
+        marker.textContent = '​';
+        mirror.appendChild(marker);
+        document.body.appendChild(mirror);
+
+        const mirrorRect = mirror.getBoundingClientRect();
+        const markerRect = marker.getBoundingClientRect();
+        const textAreaRect = textArea.getBoundingClientRect();
+
+        mirror.remove();
+
+        return {
+            // the marker's offset within the mirror's own flow, re-anchored
+            // onto the real textarea's actual viewport position - the
+            // mirror itself renders wherever document.body's static flow
+            // happens to put it, which is meaningless on its own
+            top: textAreaRect.top - textArea.scrollTop + (markerRect.top - mirrorRect.top) + parseFloat(cs.lineHeight),
+            left: textAreaRect.left - textArea.scrollLeft + (markerRect.left - mirrorRect.left),
+        };
     }
 
     function scrollCaretLineToCenter(textArea: HTMLTextAreaElement, caretLine: number, lineHeight: number) {
@@ -174,11 +402,25 @@ export function Editor({ noteId }: { noteId: string }) {
                 ref={textAreaRef}
                 value={content}
                 onChange={handleInput}
+                onSelect={handleSelect}
+                onKeyDown={handleKeyDown}
+                readOnly={isGenerating}
                 autoFocus
                 rows={1}
                 spellCheck={false}
                 id="editor"
             />
+
+            {slashMenu && (
+                <SlashMenu
+                    ref={slashMenuHandleRef}
+                    query={content.slice(slashMenu.triggerStart, cursorPos)}
+                    position={slashMenu.position}
+                    disabledActions={new Set<Action>(lastSelection ? [] : ['rewrite', 'fix-grammar'])}
+                    isGenerating={isGenerating}
+                    onSelect={handleSlashAction}
+                />
+            )}
 
             <div className={styles.bar} />
         </div>

@@ -1,0 +1,57 @@
+.menu {
+    position: fixed;
+    z-index: 10000;
+    width: min(360px, calc(100vw - 32px));
+    background-color: var(--background-color);
+    border: solid 1px var(--muted);
+    font-family: inherit;
+    font-size: var(--font-size);
+    color: var(--color);
+    overflow: hidden;
+
+    .list {
+        padding: 1ch;
+
+        .item {
+            display: flex;
+            align-items: center;
+            gap: 1ch;
+            padding-inline: 1ch;
+            height: calc(1rlh * var(--line-height));
+            cursor: pointer;
+
+            &.selected {
+                background-color: var(--container-color);
+            }
+
+            &.disabled {
+                cursor: default;
+            }
+
+            .label {
+                flex: 1;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            &.disabled .label {
+                color: var(--muted);
+            }
+
+            .hint {
+                flex-shrink: 0;
+                color: var(--muted);
+            }
+
+            .hit {
+                color: var(--color);
+            }
+        }
+    }
+
+    .loading {
+        padding: 1ch;
+        color: var(--muted);
+    }
+}

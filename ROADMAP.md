@@ -60,7 +60,9 @@ Ambitious. Start with the obvious:
   Cool), each with its own light and dark variant selected by
   `[data-theme][data-color]` together, so Theme and Color are independent
   choices that compose. Exact hex values are a first pass, not final taste.
-- **v8** TO DO AI
+- **v8** SHIPPED (experimental) AI, but not in the command palette after
+  all - see the new "/" section below instead. Left as a placeholder here
+  since this line is where the roadmap originally asked for it.
 
 Invoked with `cmd/ctrl+shift+p` for commands and `cmd/ctrl+p` for quick-open,
 like most systems use these days. Undecided whether to also wire either one to
@@ -76,6 +78,37 @@ Things it would do:
 - **Customize** — colors, font, font size
 - **AI stuff** — no clue on the integration yet; just know it'll be useful and
   everyone has to have AI in their app today
+
+## 3.1 AI slash menu — SHIPPED (experimental)
+
+Not part of the command palette (see v8 above) - typing `/` as the first
+character of an otherwise-empty line opens a small menu instead, Notion-style.
+Three actions: **Continue writing**, **Rewrite selection**, **Fix grammar**
+(the last two disabled until you've selected some text). Runs a small,
+free, open-source model (`onnx-community/Qwen2.5-0.5B-Instruct`, Apache 2.0)
+entirely in-browser via `@huggingface/transformers` + WebGPU (WASM fallback) -
+no API key, no signup, no server, ever. First use downloads the model
+(~300-500MB, cached after that by the browser). Deliberately narrow: no
+settings UI, no model picker, exactly three actions. The point was finding
+out whether a tiny local model is actually useful for this, not shipping a
+finished feature.
+
+**Known rough edges, worth iterating on before calling this done:**
+
+- The production build currently ships an extra ~23MB duplicate WASM asset
+  that Rolldown's bundler auto-discovers and inlines on top of the
+  deliberately-bundled copy in `vite.config.ts`'s `copyOnnxWasm` step - the
+  app works correctly either way (the deliberate copy is what actually gets
+  used), but it's dead weight worth tracking down and eliminating.
+- `HuggingFaceTB/SmolLM2-360M-Instruct` is a documented smaller fallback if
+  Qwen's download size or quality disappoints in practice.
+- Cancel (Escape mid-generation) has no real abort hook from transformers.js
+  today - it just stops listening to the in-flight generation and leaves
+  whatever streamed so far in place, rather than truly interrupting the model.
+
+**Namespace collision to keep in mind:** item 4 below (Blocks) already
+imagined `/` as its trigger too, for a completely different purpose. If both
+ever get built, they need to share one `/` menu, not two competing ones.
 
 ## 4. Blocks (plain text)
 
