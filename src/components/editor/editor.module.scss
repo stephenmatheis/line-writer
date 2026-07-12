@@ -29,7 +29,7 @@
 
     .overlay,
     textarea {
-        line-height: 48px;
+        line-height: var(--line-height);
     }
 
     .overlay {

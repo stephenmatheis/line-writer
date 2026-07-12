@@ -14,7 +14,9 @@
     // set before first paint so nothing flashes or reflows
     const font = localStorage.getItem('font');
     const fontSize = localStorage.getItem('font-size');
+    const lineHeight = localStorage.getItem('line-height');
 
     if (font) document.documentElement.setAttribute('data-font', font);
     if (fontSize) document.documentElement.setAttribute('data-font-size', fontSize);
+    if (lineHeight) document.documentElement.setAttribute('data-line-height', lineHeight);
 })();

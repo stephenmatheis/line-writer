@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Editor } from '@/components/editor';
 import { CommandPalette, Command } from '@/components/command-palette';
 import { ThemeProvider, useTheme, Theme } from './providers/theme-provider';
-import { FontProvider, useFont, Font, FontSize } from './providers/font-provider';
+import { FontProvider, useFont, Font, FontSize, LineHeight } from './providers/font-provider';
 import { decodeNote, encodeNote } from '@/lib/share';
 import { createNote, deleteNote, ensureNotes, listNotes, noteContent, setActiveNote } from '@/lib/notes';
 
@@ -19,9 +19,15 @@ const SIZES: { id: FontSize; label: string; px: string }[] = [
     { id: 'large', label: 'Large', px: '26px' },
 ];
 
+const LINE_HEIGHTS: { id: LineHeight; label: string; px: string }[] = [
+    { id: 'compact', label: 'Compact', px: '36px' },
+    { id: 'normal', label: 'Normal', px: '48px' },
+    { id: 'relaxed', label: 'Relaxed', px: '64px' },
+];
+
 function Commands({ activeId, onActiveIdChange }: { activeId: string; onActiveIdChange: (id: string) => void }) {
     const { theme, setTheme } = useTheme();
-    const { font, fontSize, setFont, setFontSize } = useFont();
+    const { font, fontSize, lineHeight, setFont, setFontSize, setLineHeight } = useFont();
 
     // built fresh every time the palette opens, so note titles are current
     function getCommands(): Command[] {
@@ -112,6 +118,19 @@ function Commands({ activeId, onActiveIdChange }: { activeId: string; onActiveId
                         hint: option.px,
                         active: fontSize === option.id,
                         run: () => setFontSize(option.id),
+                    })),
+            },
+            {
+                id: 'line-height',
+                label: 'Line height...',
+                hint: LINE_HEIGHTS.find((option) => option.id === lineHeight)?.label,
+                run: () =>
+                    LINE_HEIGHTS.map((option) => ({
+                        id: `line-height-${option.id}`,
+                        label: option.label,
+                        hint: option.px,
+                        active: lineHeight === option.id,
+                        run: () => setLineHeight(option.id),
                     })),
             },
             {

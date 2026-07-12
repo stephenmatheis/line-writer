@@ -25,6 +25,7 @@
 :root {
     --font-family: 'DepartureMono', monospace;
     --font-size: 22px;
+    --line-height: 48px;
 
     font-family: var(--font-family);
     font-size: var(--font-size);
@@ -53,6 +54,14 @@
 
 [data-font-size='large'] {
     --font-size: 26px;
+}
+
+[data-line-height='compact'] {
+    --line-height: 36px;
+}
+
+[data-line-height='relaxed'] {
+    --line-height: 64px;
 }
 
 [data-theme='light'] {
@@ -86,6 +95,9 @@
 
 body {
     margin: 0;
-    padding-top: calc(50dvh - 24px);
-    padding-bottom: calc(50dvh - 24px);
+
+    // half a line short of half the viewport, so any line - first or last -
+    // can land its center exactly on the middle of the screen
+    padding-top: calc(50dvh - var(--line-height) / 2);
+    padding-bottom: calc(50dvh - var(--line-height) / 2);
 }

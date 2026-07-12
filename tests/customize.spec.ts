@@ -61,6 +61,42 @@ test.describe('customize', () => {
         expect((await editorStyle(page)).fontSize).toBe('26px');
     });
 
+    test('switching the line height moves the line grid and the body padding together', async ({ page }) => {
+        await openPalette(page);
+        await runCommand(page, 'line height');
+        await runCommand(page, 'relaxed');
+
+        const metrics = await page.evaluate(() => {
+            const textArea = document.querySelector('textarea#editor') as HTMLTextAreaElement;
+
+            return {
+                lineHeight: getComputedStyle(textArea).lineHeight,
+                paddingTop: parseFloat(getComputedStyle(document.body).paddingTop),
+            };
+        });
+
+        expect(metrics.lineHeight).toBe('64px');
+
+        // the load-bearing invariant: padding is half the viewport minus half
+        // a line, so the first and last lines can still reach dead center
+        const viewportHeight = page.viewportSize()!.height;
+
+        expect(metrics.paddingTop).toBeCloseTo(viewportHeight / 2 - 32, 1);
+
+        // and the caret line is still centered under the new grid
+        const state = await caretState(page);
+
+        expect(state.spanText).toBe('third line');
+        expect(Math.abs(state.offCenter)).toBeLessThan(1);
+
+        await page.reload();
+        await page.waitForSelector('textarea#editor');
+
+        expect(await page.evaluate(() => getComputedStyle(document.querySelector('textarea#editor')!).lineHeight)).toBe(
+            '64px',
+        );
+    });
+
     test('the caret line stays centered and highlighted through a font change', async ({ page }) => {
         await openPalette(page);
         await runCommand(page, 'font...');

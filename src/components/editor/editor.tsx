@@ -6,7 +6,7 @@ import styles from './editor.module.scss';
 // One editor edits one note. The app remounts it (key={noteId}) when the
 // active note changes, so all the state below starts over from storage.
 export function Editor({ noteId }: { noteId: string }) {
-    const { font, fontSize } = useFont();
+    const { font, fontSize, lineHeight } = useFont();
     const [content, setContent] = useState(noteContent(noteId));
     const [cursorPos, setCursorPos] = useState(content.length);
     const [focusRange, setFocusRange] = useState({ start: 0, end: 0 });
@@ -117,9 +117,10 @@ export function Editor({ noteId }: { noteId: string }) {
         setFocusRange((prev) =>
             prev.start === lineStart && prev.end === lineEnd ? prev : { start: lineStart, end: lineEnd },
         );
-        // font and fontSize matter here too: changing either moves every wrap
-        // point and the ch-based width, so everything needs measuring again
-    }, [content, cursorPos, font, fontSize]);
+        // the typography settings matter here too: changing any of them moves
+        // wrap points, the ch-based width, or the line grid itself, so
+        // everything needs measuring again
+    }, [content, cursorPos, font, fontSize, lineHeight]);
 
     useEffect(() => {
         if (editorRef.current) {

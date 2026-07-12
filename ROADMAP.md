@@ -11,9 +11,9 @@ three periods.
 
 Two paths forward — undecided:
 
-- **a) Wait for a space after the last punctuation mark** before treating the
+- **a. Wait for a space after the last punctuation mark** before treating the
   sentence as finished (so `...` or `1.` mid-typing doesn't end the sentence).
-- **b) Break on visual lines instead of sentences.** Only the visually centered
+- **b. Break on visual lines instead of sentences.** Only the visually centered
   line is dark; everything above (or below, when editing a line in the middle) is
   de-focused.
 
@@ -25,7 +25,18 @@ Ambitious. Start with the obvious:
 - HJKL movement
 - Motions with counts and operators (e.g. `10j`, `dd`)
 
-## 3. Command palette — v1 SHIPPED (shell + theme, copy note, share URL), notes management SHIPPED (new / open / delete / export, share links import as new notes), customize SHIPPED (font + font size pickers; still to do: search, colors, AI)
+## 3. Command palette
+
+### Versions
+
+- **v1** SHIPPED shell + theme
+- **v2** SHIPPED copy note, share URL
+- **v3** SHIPPED notes management (new / open / delete / export, share links import as new notes)
+- **v4** SHIPPED customize font, font size
+- **v5** SHIPPED line height
+- **v6** TO DO search
+- **v7** TO DO colors (complimentary dark and light)
+- **v8** TO DO AI
 
 Invoked with `cmd/ctrl+shift+p` like most systems use these days. Undecided whether
 to also wire it to vim's `shift+;` (`:`) or keep those separate.
