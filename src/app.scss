@@ -24,8 +24,15 @@
 
 :root {
     --font-family: 'DepartureMono', monospace;
-    // --font-family: monospace;
-    --font-size: 16px;
+    --font-size: 22px;
+
+    font-family: var(--font-family);
+    font-size: var(--font-size);
+    color: var(--color);
+    background-color: var(--background-color);
+}
+
+[data-theme='light'] {
     --color: #242424;
     --color-dark: #1e1e1e;
     --color-light: #505050;
@@ -33,13 +40,6 @@
     --muted-dark: #9f9f9f;
     --container-color: #eeeeee;
     --background-color: #ffffff;
-    --shadow-color: #eeeeee;
-    --divider-color: #eeeeee;
-
-    font-family: var(--font-family);
-    font-size: 22px;
-    color: var(--color);
-    background-color: var(--background-color);
 }
 
 [data-theme='dark'] {
@@ -50,8 +50,6 @@
     --muted-dark: #9f9f9f;
     --container-color: #151515;
     --background-color: #1e1e1e;
-    --shadow-color: #242424;
-    --divider-color: #242424;
 }
 
 * {

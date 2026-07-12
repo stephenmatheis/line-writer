@@ -17,7 +17,7 @@ function Commands() {
         {
             id: 'copy-share-link',
             label: 'Copy share link',
-            hint: 'url with note encoded',
+            hint: 'with encoded url',
             run: async () => {
                 const note = localStorage.getItem('note') || '';
                 const url = `${location.origin}${location.pathname}#n:${await encodeNote(note)}`;
@@ -28,7 +28,7 @@ function Commands() {
         {
             id: 'copy-note',
             label: 'Copy note',
-            hint: 'note text to clipboard',
+            hint: 'to clipboard',
             run: async () => {
                 await navigator.clipboard.writeText(localStorage.getItem('note') || '');
             },
@@ -45,6 +45,8 @@ export default function App() {
     // A share link arrived: decode the note out of the hash before the editor
     // mounts, so the editor initializes from the already-updated localStorage
     useEffect(() => {
+        console.log(ready);
+
         if (ready || importStarted.current) return;
 
         importStarted.current = true;
@@ -66,6 +68,7 @@ export default function App() {
             }
 
             history.replaceState(null, '', location.pathname + location.search);
+
             setReady(true);
         })();
     }, [ready]);

@@ -110,8 +110,13 @@ export function CommandPalette({ commands }: { commands: Command[] }) {
     function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
         if (event.key === 'Escape') {
             event.preventDefault();
+
             setIsOpen(false);
-        } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+
+            return;
+        }
+
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
             event.preventDefault();
 
             if (matches.length) {
@@ -119,12 +124,18 @@ export function CommandPalette({ commands }: { commands: Command[] }) {
 
                 setSelected((selectedIndex + step + matches.length) % matches.length);
             }
-        } else if (event.key === 'Enter') {
+
+            return;
+        }
+
+        if (event.key === 'Enter') {
             event.preventDefault();
 
             if (matches[selectedIndex]) {
                 runCommand(matches[selectedIndex].command);
             }
+
+            return;
         }
     }
 
@@ -187,7 +198,7 @@ export function CommandPalette({ commands }: { commands: Command[] }) {
                             onClick={() => runCommand(command)}
                         >
                             <span className={styles.label}>{renderLabel(command.label, positions)}</span>
-                            {command.active && <span className={styles.active}>●</span>}
+                            {command.active && <span className={styles.active}>♦</span>}
                             {command.hint && <span className={styles.hint}>{command.hint}</span>}
                         </div>
                     ))}
