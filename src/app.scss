@@ -101,7 +101,7 @@
     --editor-width: 90ch;
 }
 
-[data-theme='light'] {
+[data-theme='light'][data-color='mono'] {
     --color: #242424;
     --color-dark: #1e1e1e;
     --color-light: #505050;
@@ -111,7 +111,7 @@
     --background-color: #ffffff;
 }
 
-[data-theme='dark'] {
+[data-theme='dark'][data-color='mono'] {
     --color: #ffffff;
     --color-dark: #242424;
     --color-light: #909090;
@@ -119,6 +119,46 @@
     --muted-dark: #9f9f9f;
     --container-color: #151515;
     --background-color: #1e1e1e;
+}
+
+[data-theme='light'][data-color='warm'] {
+    --color: #3a2f28;
+    --color-dark: #2b221c;
+    --color-light: #7a6a5a;
+    --muted: #cbb89a;
+    --muted-dark: #a68f6f;
+    --container-color: #f0e2c8;
+    --background-color: #faf3e8;
+}
+
+[data-theme='dark'][data-color='warm'] {
+    --color: #f5e6cf;
+    --color-dark: #3a2f28;
+    --color-light: #b89f7d;
+    --muted: #6b5a44;
+    --muted-dark: #8f7a5c;
+    --container-color: #3d3020;
+    --background-color: #2b2118;
+}
+
+[data-theme='light'][data-color='cool'] {
+    --color: #1c2b3a;
+    --color-dark: #141f2b;
+    --color-light: #4c6178;
+    --muted: #b9c7d6;
+    --muted-dark: #8fa2b4;
+    --container-color: #e2ebf5;
+    --background-color: #f2f6fb;
+}
+
+[data-theme='dark'][data-color='cool'] {
+    --color: #eaf1f8;
+    --color-dark: #1c2b3a;
+    --color-light: #9fb3c5;
+    --muted: #3c4f61;
+    --muted-dark: #5a7086;
+    --container-color: #1c2a38;
+    --background-color: #131c26;
 }
 
 * {

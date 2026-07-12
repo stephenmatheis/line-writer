@@ -12,6 +12,10 @@ function editorStyle(page: import('@playwright/test').Page) {
     });
 }
 
+function pageBackground(page: import('@playwright/test').Page) {
+    return page.evaluate(() => getComputedStyle(document.documentElement).backgroundColor);
+}
+
 test.beforeEach(async ({ page }) => {
     await seedNote(page, NOTE);
 });
@@ -46,6 +50,47 @@ test.describe('customize', () => {
         await page.waitForSelector('textarea#editor');
 
         expect((await editorStyle(page)).fontFamily).toContain('PureProg');
+    });
+
+    test('the color picker lists the schemes with the current one marked', async ({ page }) => {
+        await openPalette(page);
+        await runCommand(page, 'color...');
+
+        await expect(page.locator(paletteLabels)).toHaveText(['Mono', 'Warm', 'Cool']);
+    });
+
+    test('switching the color scheme applies live and persists across reload', async ({ page }) => {
+        const before = await pageBackground(page);
+
+        await openPalette(page);
+        await runCommand(page, 'color...');
+        await runCommand(page, 'warm');
+
+        const after = await pageBackground(page);
+
+        expect(after).not.toBe(before);
+        expect(await page.evaluate(() => document.documentElement.getAttribute('data-color'))).toBe('warm');
+
+        await page.reload();
+        await page.waitForSelector('textarea#editor');
+
+        expect(await page.evaluate(() => document.documentElement.getAttribute('data-color'))).toBe('warm');
+        expect(await pageBackground(page)).toBe(after);
+    });
+
+    test('each color scheme has a distinct light and dark variant', async ({ page }) => {
+        await openPalette(page);
+        await runCommand(page, 'color...');
+        await runCommand(page, 'warm');
+
+        const light = await pageBackground(page);
+
+        await openPalette(page);
+        await runCommand(page, 'theme: dark');
+
+        const dark = await pageBackground(page);
+
+        expect(dark).not.toBe(light);
     });
 
     test('switching the font size applies live and persists across reload', async ({ page }) => {

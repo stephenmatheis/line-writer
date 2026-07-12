@@ -1,5 +1,6 @@
 import { CommandPalette, Command } from '@/components/command-palette';
 import { useTheme, Theme } from '@/providers/theme-provider';
+import { useColor, COLOR_SCHEMES } from '@/providers/color-provider';
 import { useFont, Font, FontSize, LINE_HEIGHTS, WIDTHS } from '@/providers/font-provider';
 import { useGuide } from '@/providers/guide-provider';
 import { encodeNote } from '@/lib/share';
@@ -11,6 +12,8 @@ const FONTS: { id: Font; label: string }[] = [
     { id: 'paper-mono', label: 'Paper Mono' },
     { id: 'monospace', label: 'System monospace' },
 ];
+
+const COLOR_LABELS: Record<(typeof COLOR_SCHEMES)[number], string> = { mono: 'Mono', warm: 'Warm', cool: 'Cool' };
 
 const SIZES: { id: FontSize; label: string }[] = [
     { id: 'small', label: 'Small' },
@@ -52,6 +55,7 @@ function naturalLineHeight() {
 
 export function Commands({ activeId, onActiveIdChange }: { activeId: string; onActiveIdChange: (id: string) => void }) {
     const { theme, setTheme } = useTheme();
+    const { color, setColor } = useColor();
     const { font, fontSize, lineHeight, width, setFont, setFontSize, setLineHeight, setWidth } = useFont();
     const { guides, setGuides } = useGuide();
 
@@ -124,6 +128,18 @@ export function Commands({ activeId, onActiveIdChange }: { activeId: string; onA
                 active: theme === mode,
                 run: () => setTheme(mode),
             })),
+            {
+                id: 'color',
+                label: 'Color...',
+                hint: COLOR_LABELS[color],
+                run: () =>
+                    COLOR_SCHEMES.map((option) => ({
+                        id: `color-${option}`,
+                        label: COLOR_LABELS[option],
+                        active: color === option,
+                        run: () => setColor(option),
+                    })),
+            },
             {
                 id: 'font',
                 label: 'Font...',

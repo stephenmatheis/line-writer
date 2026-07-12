@@ -55,7 +55,11 @@ Ambitious. Start with the obvious:
   grouped-sections mechanism stays in the code unused (harmless) so this is a
   clean revert back to the blended-and-grouped list if the split doesn't
   earn its keep.
-- **v7** TO DO colors (complimentary dark and light)
+- **v7** SHIPPED colors: a "Color..." picker alongside Theme, same pattern as
+  Font/Width. Three schemes so far (Mono - the original grayscale, Warm,
+  Cool), each with its own light and dark variant selected by
+  `[data-theme][data-color]` together, so Theme and Color are independent
+  choices that compose. Exact hex values are a first pass, not final taste.
 - **v8** TO DO AI
 
 Invoked with `cmd/ctrl+shift+p` for commands and `cmd/ctrl+p` for quick-open,

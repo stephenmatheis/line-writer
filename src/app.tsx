@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ThemeProvider } from '@/providers/theme-provider';
+import { ColorProvider } from '@/providers/color-provider';
 import { FontProvider } from '@/providers/font-provider';
 import { GuideProvider } from '@/providers/guide-provider';
 import { Editor } from '@/components/editor';
@@ -47,12 +48,14 @@ export default function App() {
 
     return (
         <ThemeProvider>
-            <FontProvider>
-                <GuideProvider>
-                    {ready && fontsReady && <Editor key={activeId} noteId={activeId} />}
-                    <Commands activeId={activeId} onActiveIdChange={setActiveId} />
-                </GuideProvider>
-            </FontProvider>
+            <ColorProvider>
+                <FontProvider>
+                    <GuideProvider>
+                        {ready && fontsReady && <Editor key={activeId} noteId={activeId} />}
+                        <Commands activeId={activeId} onActiveIdChange={setActiveId} />
+                    </GuideProvider>
+                </FontProvider>
+            </ColorProvider>
         </ThemeProvider>
     );
 }

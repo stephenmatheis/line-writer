@@ -9,6 +9,7 @@
             : savedTheme || (systemDarkMode ? 'dark' : 'light');
 
     document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.setAttribute('data-color', localStorage.getItem('color') || 'mono');
 
     // font choices ride along for the same reason the theme does: set
     // before first paint so nothing flashes or reflows. Always stamp the
