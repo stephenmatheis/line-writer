@@ -1,4 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
+/* oxlint-disable react-refresh/only-export-components */
 
 import { createContext, Dispatch, SetStateAction, useContext, useEffect, useState, ReactNode } from 'react';
 

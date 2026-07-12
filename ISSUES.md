@@ -6,20 +6,20 @@ Running log of bugs found and fixed. Newest first.
 
 ## #1 — Command palette: stale query survives reopen
 
-| | |
-| --- | --- |
-| **Status** | Closed |
-| **Opened** | 2026-07-10 |
-| **Closed** | 2026-07-10 |
-| **Severity** | Medium |
-| **Component** | `src/components/command-palette/command-palette.tsx` |
-| **Found by** | Automated verification (Playwright), during v1 development — never shipped |
+|               |                                                                            |
+| ------------- | -------------------------------------------------------------------------- |
+| **Status**    | Closed                                                                     |
+| **Opened**    | 2026-07-10                                                                 |
+| **Closed**    | 2026-07-10                                                                 |
+| **Severity**  | Medium                                                                     |
+| **Component** | `src/components/command-palette/command-palette.tsx`                       |
+| **Found by**  | Automated verification (Playwright), during v1 development — never shipped |
 
 ### What happened
 
 After closing the palette with Escape and reopening it, the previous search
 query was still live for one render. Anything typed in that window was
-appended to the *old* query instead of starting fresh — e.g. close while the
+appended to the _old_ query instead of starting fresh — e.g. close while the
 input held `thl`, reopen, type `share`, and the palette filtered on
 `thlshare`. Nothing matched, so Enter did nothing and the selected command
 appeared broken.
@@ -46,7 +46,7 @@ useEffect(() => {
 }, [isOpen]);
 ```
 
-Effects run *after* the opening render commits, so the palette first renders
+Effects run _after_ the opening render commits, so the palette first renders
 with the stale query, and only then schedules the reset. Input events that
 land before the reset commits read the input's current (stale) value and
 append to it. Closing the palette renders `null` but keeps the component

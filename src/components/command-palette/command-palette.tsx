@@ -146,7 +146,9 @@ export function CommandPalette({ commands }: { commands: Command[] }) {
 
         const hits = new Set(positions);
 
-        return [...label].map((char, index) =>
+        // split('') walks the label the same way fuzzyMatch counted it (by code
+        // unit), so the hit positions line up even if a label ever gets an emoji
+        return label.split('').map((char, index) =>
             hits.has(index) ? (
                 <span key={index} className={styles.hit}>
                     {char}
