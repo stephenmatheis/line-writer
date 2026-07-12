@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { seedNote, caretState } from './utils';
+import { seedNote, caretState, openPalette, runCommand } from './utils';
 
 const TWELVE_LINES = Array.from({ length: 12 }, (_, i) => `line number ${i + 1}`).join('\n');
 
@@ -33,6 +33,12 @@ test.describe('typewriter editor', () => {
 
     test('a soft-wrapped paragraph highlights only the caret segment', async ({ page }) => {
         await seedNote(page, TWELVE_LINES);
+
+        // pin a narrow width so this line reliably wraps regardless of the
+        // default editor width
+        await openPalette(page);
+        await runCommand(page, 'width...');
+        await runCommand(page, 'narrow');
 
         const paragraph = 'alpha bravo charlie delta echo foxtrot golf';
 

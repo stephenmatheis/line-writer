@@ -120,6 +120,11 @@ export function CommandPalette({ getCommands }: { getCommands: () => Command[] }
             setQuery('');
             setSelected(0);
 
+            // a mouse click's mousedown already blurred the input (it's a
+            // non-focusable row), before this onClick even ran - reclaim
+            // focus so typing and Escape keep working on the sub-list
+            inputRef.current?.focus();
+
             return;
         }
 

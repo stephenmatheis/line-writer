@@ -10,13 +10,16 @@
 
     document.documentElement.setAttribute('data-theme', theme);
 
-    // font choices ride along for the same reason the theme does:
-    // set before first paint so nothing flashes or reflows
-    const font = localStorage.getItem('font');
-    const fontSize = localStorage.getItem('font-size');
-    const lineHeight = localStorage.getItem('line-height');
-
-    if (font) document.documentElement.setAttribute('data-font', font);
-    if (fontSize) document.documentElement.setAttribute('data-font-size', fontSize);
-    if (lineHeight) document.documentElement.setAttribute('data-line-height', lineHeight);
+    // font choices ride along for the same reason the theme does: set
+    // before first paint so nothing flashes or reflows. Always stamp the
+    // defaults too - the per-font size rules in CSS match on both
+    // attributes, so they need to be present even on a first visit
+    document.documentElement.setAttribute('data-font', localStorage.getItem('font') || 'departure-mono');
+    document.documentElement.setAttribute('data-font-size', localStorage.getItem('font-size') || 'medium');
+    document.documentElement.setAttribute('data-line-height', localStorage.getItem('line-height') || '2');
+    document.documentElement.setAttribute('data-width', localStorage.getItem('width') || 'normal');
+    document.documentElement.setAttribute(
+        'data-debug-guides',
+        localStorage.getItem('debug-guides') === 'true' ? 'true' : 'false',
+    );
 })();

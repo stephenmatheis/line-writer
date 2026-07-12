@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Editor } from '@/components/editor';
 import { CommandPalette, Command } from '@/components/command-palette';
 import { ThemeProvider, useTheme, Theme } from './providers/theme-provider';
-import { FontProvider, useFont, Font, FontSize, LineHeight } from './providers/font-provider';
+import { FontProvider, useFont, Font, FontSize, LINE_HEIGHTS, WIDTHS } from './providers/font-provider';
+import { DebugProvider, useDebug } from './providers/debug-provider';
 import { decodeNote, encodeNote } from '@/lib/share';
 import { createNote, deleteNote, ensureNotes, listNotes, noteContent, setActiveNote } from '@/lib/notes';
 
@@ -13,21 +14,48 @@ const FONTS: { id: Font; label: string }[] = [
     { id: 'monospace', label: 'System monospace' },
 ];
 
-const SIZES: { id: FontSize; label: string; px: string }[] = [
-    { id: 'small', label: 'Small', px: '18px' },
-    { id: 'medium', label: 'Medium', px: '22px' },
-    { id: 'large', label: 'Large', px: '26px' },
+const SIZES: { id: FontSize; label: string }[] = [
+    { id: 'small', label: 'Small' },
+    { id: 'medium', label: 'Medium' },
+    { id: 'large', label: 'Large' },
 ];
 
-const LINE_HEIGHTS: { id: LineHeight; label: string; px: string }[] = [
-    { id: 'compact', label: 'Compact', px: '36px' },
-    { id: 'normal', label: 'Normal', px: '48px' },
-    { id: 'relaxed', label: 'Relaxed', px: '64px' },
-];
+// What Small/Medium/Large mean depends on the font. DepartureMono's
+// designers recommend sizes in multiples of 11; anything else gets the
+// defaults. These mirror the values in app.scss - the CSS renders them,
+// this table is for the px hints in the pickers.
+const DEPARTURE_SIZES: Record<FontSize, number> = { small: 11, medium: 16.5, large: 22 };
+const DEFAULT_SIZES: Record<FontSize, number> = { small: 12, medium: 18, large: 24 };
+
+function sizesFor(font: Font) {
+    return font === 'departure-mono' ? DEPARTURE_SIZES : DEFAULT_SIZES;
+}
+
+const WIDTH_LABELS: Record<(typeof WIDTHS)[number], string> = { narrow: 'Narrow', normal: 'Normal', wide: 'Wide' };
+const WIDTH_CH: Record<(typeof WIDTHS)[number], number> = { narrow: 30, normal: 60, wide: 90 };
+
+// What the 1 multiplier resolves to right now: the font's natural
+// (line-height: normal) box at the current size - same thing 1rlh means in
+// the CSS. Measured live because it isn't derivable from the font size
+// (DepartureMono at 22px is 28px tall) and doesn't even scale linearly.
+function naturalLineHeight() {
+    const probe = document.createElement('div');
+
+    probe.style.cssText = 'position:absolute;visibility:hidden;line-height:normal;width:100px';
+    probe.textContent = 'Xg';
+    document.body.appendChild(probe);
+
+    const height = probe.getBoundingClientRect().height;
+
+    probe.remove();
+
+    return height;
+}
 
 function Commands({ activeId, onActiveIdChange }: { activeId: string; onActiveIdChange: (id: string) => void }) {
     const { theme, setTheme } = useTheme();
-    const { font, fontSize, lineHeight, setFont, setFontSize, setLineHeight } = useFont();
+    const { font, fontSize, lineHeight, width, setFont, setFontSize, setLineHeight, setWidth } = useFont();
+    const { guides, setGuides } = useDebug();
 
     // built fresh every time the palette opens, so note titles are current
     function getCommands(): Command[] {
@@ -115,7 +143,7 @@ function Commands({ activeId, onActiveIdChange }: { activeId: string; onActiveId
                     SIZES.map((option) => ({
                         id: `font-size-${option.id}`,
                         label: option.label,
-                        hint: option.px,
+                        hint: `${sizesFor(font)[option.id]}px`,
                         active: fontSize === option.id,
                         run: () => setFontSize(option.id),
                     })),
@@ -123,15 +151,51 @@ function Commands({ activeId, onActiveIdChange }: { activeId: string; onActiveId
             {
                 id: 'line-height',
                 label: 'Line height...',
-                hint: LINE_HEIGHTS.find((option) => option.id === lineHeight)?.label,
+                hint: lineHeight,
+                run: () => {
+                    const natural = naturalLineHeight();
+
+                    return LINE_HEIGHTS.map((option) => ({
+                        id: `line-height-${option}`,
+                        label: option,
+                        // resolved for the current font and size
+                        hint: `${+(natural * parseFloat(option)).toFixed(2)}px`,
+                        active: lineHeight === option,
+                        run: () => setLineHeight(option),
+                    }));
+                },
+            },
+            {
+                id: 'width',
+                label: 'Width...',
+                hint: WIDTH_LABELS[width],
                 run: () =>
-                    LINE_HEIGHTS.map((option) => ({
-                        id: `line-height-${option.id}`,
-                        label: option.label,
-                        hint: option.px,
-                        active: lineHeight === option.id,
-                        run: () => setLineHeight(option.id),
+                    WIDTHS.map((option) => ({
+                        id: `width-${option}`,
+                        label: WIDTH_LABELS[option],
+                        hint: `${WIDTH_CH[option]}ch`,
+                        active: width === option,
+                        run: () => setWidth(option),
                     })),
+            },
+            {
+                id: 'debug-guides',
+                label: 'Debug guides...',
+                hint: guides ? 'On' : 'Off',
+                run: () => [
+                    {
+                        id: 'debug-guides-on',
+                        label: 'On',
+                        active: guides,
+                        run: () => setGuides(true),
+                    },
+                    {
+                        id: 'debug-guides-off',
+                        label: 'Off',
+                        active: !guides,
+                        run: () => setGuides(false),
+                    },
+                ],
             },
             {
                 id: 'copy-share-link',
@@ -160,7 +224,16 @@ function Commands({ activeId, onActiveIdChange }: { activeId: string; onActiveId
 export default function App() {
     const [activeId, setActiveId] = useState(() => ensureNotes());
     const [ready, setReady] = useState(() => !location.hash.startsWith('#n:'));
+    const [fontsReady, setFontsReady] = useState(false);
     const importStarted = useRef(false);
+
+    // The line grid is built on 1rlh, which changes when the webfont
+    // finishes loading. Hold the editor back until fonts are final so its
+    // first measurement isn't against the fallback font's metrics. The
+    // fonts are local and preloaded, so this resolves almost immediately.
+    useEffect(() => {
+        void document.fonts.ready.then(() => setFontsReady(true));
+    }, []);
 
     // A share link arrived: decode it before the editor mounts. The shared
     // note comes in as its own new note - never on top of something you
@@ -189,8 +262,10 @@ export default function App() {
     return (
         <ThemeProvider>
             <FontProvider>
-                {ready && <Editor key={activeId} noteId={activeId} />}
-                <Commands activeId={activeId} onActiveIdChange={setActiveId} />
+                <DebugProvider>
+                    {ready && fontsReady && <Editor key={activeId} noteId={activeId} />}
+                    <Commands activeId={activeId} onActiveIdChange={setActiveId} />
+                </DebugProvider>
             </FontProvider>
         </ThemeProvider>
     );

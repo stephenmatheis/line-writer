@@ -34,6 +34,10 @@ Ambitious. Start with the obvious:
 - **v3** SHIPPED notes management (new / open / delete / export, share links import as new notes)
 - **v4** SHIPPED customize font, font size
 - **v5** SHIPPED line height
+- **v5.1** SHIPPED tie command palette line height to selection
+- **v5.2** SHIPPED fix bug: when choosing a command palette picker with the mouse thus triggering a sub menu, escape no longer goes back to the main menu
+- **v5.3** SHIPPED toggle .editor background color of #ff000030 and red bar for testing (off by default)
+- **v5.4** SHIPPED editor width choice: narrow = 30ch, normal = 60ch, wide = 90ch (default normal)
 - **v6** TO DO search
 - **v7** TO DO colors (complimentary dark and light)
 - **v8** TO DO AI
@@ -60,3 +64,5 @@ document apps; can't think of a way to make that work with plain text. Would be
 cool though.
 
 ## 5. Syntax highlighting for code blocks
+
+No clue how to go about this one yet. Need to think on it.

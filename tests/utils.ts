@@ -29,6 +29,23 @@ export async function seedNote(page: Page, note: string) {
     await page.evaluate(() => document.fonts.ready);
 }
 
+// What 1rlh resolves to right now: the font's natural line height at the
+// current root font and size - the base the line-height multipliers scale.
+export function oneRlh(page: Page) {
+    return page.evaluate(() => {
+        const probe = document.createElement('div');
+
+        probe.style.cssText = 'position:absolute;visibility:hidden;height:1rlh';
+        document.body.appendChild(probe);
+
+        const height = probe.getBoundingClientRect().height;
+
+        probe.remove();
+
+        return height;
+    });
+}
+
 // Independent re-measurement of the caret's visual line (same mirror
 // technique as the app, reimplemented here so a bug in the app's version
 // can't hide itself), plus the current focus-highlight state.

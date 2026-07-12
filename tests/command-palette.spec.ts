@@ -53,6 +53,28 @@ test.describe('command palette', () => {
         await expect(page.locator(paletteInput)).toBeFocused();
     });
 
+    test('escape backs out of a mouse-opened sub-list too (regression)', async ({ page }) => {
+        // the bug: drilling in with the mouse (unlike Enter) fires a real
+        // click event, which raced React's re-render and left focus
+        // stranded outside the palette's input - so neither typing nor
+        // escape reached the sub-list afterward
+        await openPalette(page);
+        await page.click(`${palette} [class*=item]:has-text("Open note")`);
+
+        await expect(page.locator(paletteInput)).toBeFocused();
+
+        // typing should filter the sub-list, not land in the note
+        await page.keyboard.type('zzz-no-match');
+
+        await expect(page.locator(`${palette} [class*=empty]`)).toBeVisible();
+        await expect(page.locator('textarea#editor')).toHaveValue(NOTE);
+
+        // one escape pops out of the note picker straight to the top level
+        await page.keyboard.press('Escape');
+
+        await expect(page.locator(paletteLabels).filter({ hasText: 'New note' })).toHaveCount(1);
+    });
+
     test('filters to a theme command and runs it', async ({ page }) => {
         await openPalette(page);
         await page.keyboard.type('dar');

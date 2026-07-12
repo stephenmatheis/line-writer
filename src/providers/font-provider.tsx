@@ -4,15 +4,22 @@ import { createContext, useContext, useState, ReactNode } from 'react';
 
 export type Font = 'departure-mono' | 'pureprog' | 'paper-mono' | 'monospace';
 export type FontSize = 'small' | 'medium' | 'large';
-export type LineHeight = 'compact' | 'normal' | 'relaxed';
+export type LineHeight = '1' | '1.25' | '1.5' | '2' | '3';
+export type Width = 'narrow' | 'normal' | 'wide';
+
+// unitless multipliers of the font size, like CSS line-height numbers
+export const LINE_HEIGHTS: LineHeight[] = ['1', '1.25', '1.5', '2', '3'];
+export const WIDTHS: Width[] = ['narrow', 'normal', 'wide'];
 
 type FontContextType = {
     font: Font;
     fontSize: FontSize;
     lineHeight: LineHeight;
+    width: Width;
     setFont: (font: Font) => void;
     setFontSize: (size: FontSize) => void;
     setLineHeight: (lineHeight: LineHeight) => void;
+    setWidth: (width: Width) => void;
 };
 
 const FontContext = createContext<FontContextType | undefined>(undefined);
@@ -35,9 +42,13 @@ export function FontProvider({ children }: { children: ReactNode }) {
     const [fontSize, setFontSizeState] = useState<FontSize>(
         () => (localStorage.getItem('font-size') as FontSize) || 'medium',
     );
-    const [lineHeight, setLineHeightState] = useState<LineHeight>(
-        () => (localStorage.getItem('line-height') as LineHeight) || 'normal',
-    );
+    const [lineHeight, setLineHeightState] = useState<LineHeight>(() => {
+        const saved = localStorage.getItem('line-height');
+
+        // older builds stored names like 'relaxed' - fall back to the default
+        return LINE_HEIGHTS.includes(saved as LineHeight) ? (saved as LineHeight) : '2';
+    });
+    const [width, setWidthState] = useState<Width>(() => (localStorage.getItem('width') as Width) || 'normal');
 
     function setFont(next: Font) {
         localStorage.setItem('font', next);
@@ -57,8 +68,16 @@ export function FontProvider({ children }: { children: ReactNode }) {
         setLineHeightState(next);
     }
 
+    function setWidth(next: Width) {
+        localStorage.setItem('width', next);
+        document.documentElement.setAttribute('data-width', next);
+        setWidthState(next);
+    }
+
     return (
-        <FontContext.Provider value={{ font, fontSize, lineHeight, setFont, setFontSize, setLineHeight }}>
+        <FontContext.Provider
+            value={{ font, fontSize, lineHeight, width, setFont, setFontSize, setLineHeight, setWidth }}
+        >
             {children}
         </FontContext.Provider>
     );

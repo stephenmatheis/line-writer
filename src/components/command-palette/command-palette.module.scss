@@ -4,6 +4,11 @@
     z-index: 10000;
 
     .palette {
+        // same row height the editor's line grid uses (1rlh * the line
+        // height multiplier) - so the palette's density follows Line
+        // height... in the palette itself, not just the note
+        --row-height: calc(1rlh * var(--line-height));
+
         position: absolute;
         top: 50%;
         left: 50%;
@@ -15,10 +20,10 @@
 
         input {
             width: 100%;
-            line-height: 48px;
+            line-height: var(--row-height);
             padding-inline: 2ch;
             font-family: inherit;
-            font-size: 16px;
+            font-size: var(--font-size);
             color: var(--color);
             background: none;
             border: none;
@@ -33,15 +38,15 @@
         .list {
             overflow-y: auto;
             padding: 1ch;
-            max-height: calc(100dvh - (48px * 2));
+            max-height: calc(100dvh - (var(--row-height) * 2));
 
             .item {
                 display: flex;
                 align-items: center;
-                gap: 10px;
+                gap: 1ch;
                 padding-inline: 1ch;
-                height: 48px;
-                font-size: 16px;
+                height: var(--row-height);
+                font-size: var(--font-size);
                 color: var(--color);
                 cursor: pointer;
 
@@ -68,18 +73,18 @@
 
                 .active {
                     color: var(--color);
-                    font-size: 10px;
+                    font-size: var(--font-size);
                 }
 
                 .hint {
                     color: var(--muted);
-                    font-size: 13px;
+                    font-size: var(--font-size);
                 }
             }
 
             .empty {
-                padding: 8px 10px;
-                font-size: 16px;
+                padding: 1rlh 1ch;
+                font-size: var(--font-size);
                 color: var(--muted);
             }
         }

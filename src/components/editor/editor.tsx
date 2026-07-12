@@ -6,7 +6,7 @@ import styles from './editor.module.scss';
 // One editor edits one note. The app remounts it (key={noteId}) when the
 // active note changes, so all the state below starts over from storage.
 export function Editor({ noteId }: { noteId: string }) {
-    const { font, fontSize, lineHeight } = useFont();
+    const { font, fontSize, lineHeight, width } = useFont();
     const [content, setContent] = useState(noteContent(noteId));
     const [cursorPos, setCursorPos] = useState(content.length);
     const [focusRange, setFocusRange] = useState({ start: 0, end: 0 });
@@ -120,7 +120,7 @@ export function Editor({ noteId }: { noteId: string }) {
         // the typography settings matter here too: changing any of them moves
         // wrap points, the ch-based width, or the line grid itself, so
         // everything needs measuring again
-    }, [content, cursorPos, font, fontSize, lineHeight]);
+    }, [content, cursorPos, font, fontSize, lineHeight, width]);
 
     useEffect(() => {
         if (editorRef.current) {
@@ -132,8 +132,13 @@ export function Editor({ noteId }: { noteId: string }) {
 
         function focus(event: Event) {
             // other UI (command palette, future modals) opts out of the
-            // always-refocus-the-editor behavior with this attribute
-            if (event.target instanceof Element && event.target.closest('[data-no-refocus]')) {
+            // always-refocus-the-editor behavior with this attribute. Query
+            // the live DOM instead of walking up from event.target: clicking
+            // a command that swaps the palette's list (drilling into a
+            // sub-menu) makes React detach that row before this handler
+            // runs, so closest() on the stale event.target would miss it
+            // and this would steal focus back from the palette.
+            if (document.querySelector('[data-no-refocus]')) {
                 return;
             }
 
