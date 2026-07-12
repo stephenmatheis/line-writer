@@ -39,11 +39,8 @@ test.describe('customize', () => {
         const after = await editorStyle(page);
 
         expect(after.fontFamily).toContain('PureProg');
-        // same 20ch width, different metrics - the box actually resized
         expect(after.width).not.toBe(before.width);
-        // sizes are per font: Medium means 16.5px for DepartureMono
-        // (multiples of 11) but 18px for everything else
-        expect(after.fontSize).toBe('18px');
+        expect(after.fontSize).toBe('16px');
 
         await page.reload();
         await page.waitForSelector('textarea#editor');

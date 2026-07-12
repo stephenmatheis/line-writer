@@ -232,7 +232,7 @@ export function CommandPalette({ getCommands }: CommandPaletteProps) {
                             onClick={() => runCommand(command)}
                         >
                             <span className={styles.label}>{renderLabel(command.label, positions)}</span>
-                            {command.active && <span className={styles.active}>♦</span>}
+                            {command.active && <span className={styles.active}>←</span>}
                             {command.hint && <span className={styles.hint}>{command.hint}</span>}
                         </div>
                     ))}

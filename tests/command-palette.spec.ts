@@ -32,10 +32,10 @@ test.describe('command palette', () => {
 
     test('escape backs out of a sub-list before closing', async ({ page }) => {
         await openPalette(page);
-        await page.keyboard.type('open note');
+        await page.keyboard.type('delete note');
         await page.keyboard.press('Enter');
 
-        // in the notes picker now - escape should return to the commands
+        // in the delete-note picker now - escape should return to the commands
         await page.keyboard.press('Escape');
 
         await expect(page.locator(paletteLabels).filter({ hasText: 'New note' })).toHaveCount(1);
@@ -59,7 +59,7 @@ test.describe('command palette', () => {
         // stranded outside the palette's input - so neither typing nor
         // escape reached the sub-list afterward
         await openPalette(page);
-        await page.click(`${palette} [class*=item]:has-text("Open note")`);
+        await page.click(`${palette} [class*=item]:has-text("Delete note")`);
 
         await expect(page.locator(paletteInput)).toBeFocused();
 
@@ -114,6 +114,13 @@ test.describe('command palette', () => {
         await page.keyboard.type('thl');
 
         await expect(page.locator(paletteLabels).filter({ hasText: 'Theme: Light' })).toHaveCount(1);
+    });
+
+    test('note titles are searchable directly, no "Open note" submenu needed', async ({ page }) => {
+        await openPalette(page);
+        await page.keyboard.type('hello world');
+
+        await expect(page.locator(paletteLabels)).toHaveText(['hello world note']);
     });
 
     test('resets the query when reopened (regression, ISSUES.md #1)', async ({ page }) => {

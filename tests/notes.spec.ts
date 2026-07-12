@@ -34,19 +34,17 @@ test.describe('notes', () => {
         expect(await notesIndex(page)).toHaveLength(2);
     });
 
-    test('open note switches between notes', async ({ page }) => {
+    test('a note title matches directly, no "Open note" submenu needed', async ({ page }) => {
         await openPalette(page);
         await runCommand(page, 'new note');
         await page.keyboard.type('second note stuff');
 
         await openPalette(page);
-        await runCommand(page, 'open note');
         await runCommand(page, 'groceries');
 
         await expect(page.locator('textarea#editor')).toHaveValue(NOTE);
 
         await openPalette(page);
-        await runCommand(page, 'open note');
         await runCommand(page, 'second');
 
         await expect(page.locator('textarea#editor')).toHaveValue('second note stuff');
@@ -57,7 +55,7 @@ test.describe('notes', () => {
         await page.keyboard.type('a better title');
 
         await openPalette(page);
-        await runCommand(page, 'open note');
+        await page.keyboard.type('a better title');
 
         await expect(page.locator('[data-no-refocus] [class*=item] [class*=label]')).toHaveText(['a better title']);
     });

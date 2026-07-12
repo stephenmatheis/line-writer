@@ -38,7 +38,11 @@ Ambitious. Start with the obvious:
 - **v5.2** SHIPPED fix bug: when choosing a command palette picker with the mouse thus triggering a sub menu, escape no longer goes back to the main menu
 - **v5.3** SHIPPED toggle .editor background color of #ff000030 and red bar for testing (off by default)
 - **v5.4** SHIPPED editor width choice: narrow = 30ch, normal = 60ch, wide = 90ch (default normal)
-- **v6** TO DO search
+- **v6** SHIPPED search: note titles are flattened into the top-level palette
+  list and fuzzy-matched right alongside commands - no "Open note..." submenu
+  to drill into first. "Delete note..." keeps its own submenu since it's
+  destructive. Note _content_ search is out of scope for the palette (no room
+  for match context/snippets in a single-line list) - would need its own UI.
 - **v7** TO DO colors (complimentary dark and light)
 - **v8** TO DO AI
 
@@ -66,3 +70,9 @@ cool though.
 ## 5. Syntax highlighting for code blocks
 
 No clue how to go about this one yet. Need to think on it.
+
+## 6. Display styles
+
+- **Cards** Think hypercard. Keyboard/mouse through stacks of cards.
+- **Fullscreen** Current UI.
+- **List** List of notes in a sidebar. Mouse/keyboard to select. Note in right box. Think TUI designs.

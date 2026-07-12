@@ -12,14 +12,14 @@
         transform: translateX(-50%);
         width: min(560px, calc(100vw - 32px));
         background-color: var(--background-color);
-        border: solid 1px var(--color);
+        border: solid 1px var(--muted);
         overflow: hidden;
 
         .field {
             display: flex;
             align-items: center;
             padding-inline: 2ch;
-            border-bottom: 1px solid var(--color);
+            border-bottom: 1px solid var(--muted);
 
             span {
                 display: inline-block;

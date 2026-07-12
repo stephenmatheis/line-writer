@@ -23,7 +23,7 @@ const SIZES: { id: FontSize; label: string }[] = [
 // defaults. These mirror the values in app.scss - the CSS renders them,
 // this table is for the px hints in the pickers.
 const DEPARTURE_SIZES: Record<FontSize, number> = { small: 11, medium: 16.5, large: 22 };
-const DEFAULT_SIZES: Record<FontSize, number> = { small: 12, medium: 18, large: 24 };
+const DEFAULT_SIZES: Record<FontSize, number> = { small: 12, medium: 16, large: 20 };
 
 function sizesFor(font: Font) {
     return font === 'departure-mono' ? DEPARTURE_SIZES : DEFAULT_SIZES;
@@ -65,22 +65,18 @@ export function Commands({ activeId, onActiveIdChange }: { activeId: string; onA
                 label: 'New note',
                 run: () => onActiveIdChange(createNote()),
             },
-            {
-                id: 'open-note',
-                label: 'Open note...',
-                hint: `${notes.length} note${notes.length === 1 ? '' : 's'}`,
-                run: () =>
-                    notes.map((note) => ({
-                        id: `open-${note.id}`,
-                        label: note.title,
-                        hint: new Date(note.updatedAt).toLocaleDateString(),
-                        active: note.id === activeId,
-                        run: () => {
-                            setActiveNote(note.id);
-                            onActiveIdChange(note.id);
-                        },
-                    })),
-            },
+            // one entry per note, searchable right alongside commands -
+            // no "Open note..." submenu to drill into first
+            ...notes.map((note) => ({
+                id: `open-${note.id}`,
+                label: note.title,
+                hint: new Date(note.updatedAt).toLocaleDateString(),
+                active: note.id === activeId,
+                run: () => {
+                    setActiveNote(note.id);
+                    onActiveIdChange(note.id);
+                },
+            })),
             {
                 id: 'delete-note',
                 label: 'Delete note...',
