@@ -1,7 +1,14 @@
 import { Page } from '@playwright/test';
 
+// mod+shift+p - commands: manage, customize, share (no notes in this list)
 export async function openPalette(page: Page) {
     await page.keyboard.press('ControlOrMeta+Shift+KeyP');
+    await page.waitForSelector('[data-no-refocus] input');
+}
+
+// mod+p - quick-open: jump straight to a note, or start a new one
+export async function openQuickOpen(page: Page) {
+    await page.keyboard.press('ControlOrMeta+KeyP');
     await page.waitForSelector('[data-no-refocus] input');
 }
 

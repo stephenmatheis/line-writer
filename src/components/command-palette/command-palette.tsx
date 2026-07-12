@@ -45,11 +45,16 @@ function fuzzyMatch(query: string, label: string) {
 }
 
 type CommandPaletteProps = {
-    // build commands list on open so they're always fresh (note titles change with every keystroke)
+    // build commands lists on open so they're always fresh (note titles change with every keystroke)
+    // mod+shift+p
     getCommands: () => Command[];
+    // mod+p - VS Code/devtools style quick-open, kept as its own list rather
+    // than folded into getCommands so it opens straight to the thing you
+    // actually want (a note) instead of a blended list
+    getQuickOpenCommands: () => Command[];
 };
 
-export function CommandPalette({ getCommands }: CommandPaletteProps) {
+export function CommandPalette({ getCommands, getQuickOpenCommands }: CommandPaletteProps) {
     const [isOpen, setIsOpen] = useState(false);
     // a stack of lists: drilling into a sub-list pushes, escape pops, and
     // escape on the last one closes the palette
@@ -96,8 +101,8 @@ export function CommandPalette({ getCommands }: CommandPaletteProps) {
 
     // reset the query in the same render that opens, not an effect later -
     // an effect leaves a frame where typing appends to the previous query
-    function open() {
-        setStack([getCommands()]);
+    function open(getList: () => Command[]) {
+        setStack([getList()]);
         setQuery('');
         setSelected(0);
         setIsOpen(true);
@@ -105,14 +110,16 @@ export function CommandPalette({ getCommands }: CommandPaletteProps) {
 
     useEffect(() => {
         function onKeyDown(event: globalThis.KeyboardEvent) {
-            if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key.toLowerCase() === 'p') {
-                event.preventDefault();
+            if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 'p') return;
 
-                if (isOpen) {
-                    setIsOpen(false);
-                } else {
-                    open();
-                }
+            event.preventDefault();
+
+            if (isOpen) {
+                // either shortcut closes whichever list is currently open -
+                // switching lists mid-session would need its own affordance
+                setIsOpen(false);
+            } else {
+                open(event.shiftKey ? getCommands : getQuickOpenCommands);
             }
         }
 

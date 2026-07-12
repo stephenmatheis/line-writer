@@ -47,11 +47,20 @@ Ambitious. Start with the obvious:
   single-group list (every submenu) shows no headers at all. Note _content_
   search is out of scope for the palette (no room for match context/snippets
   in a single-line list) - would need its own UI.
+- **v6.1** SHIPPED (experimental) split the one blended palette into two, VS
+  Code/devtools style: `cmd/ctrl+p` is quick-open (New note + note titles
+  only), `cmd/ctrl+shift+p` is commands (everything else, no notes). Either
+  shortcut closes whichever one is open. Deliberately steals the browser's
+  print shortcut - acceptable since this replaces the new tab page. The v6
+  grouped-sections mechanism stays in the code unused (harmless) so this is a
+  clean revert back to the blended-and-grouped list if the split doesn't
+  earn its keep.
 - **v7** TO DO colors (complimentary dark and light)
 - **v8** TO DO AI
 
-Invoked with `cmd/ctrl+shift+p` like most systems use these days. Undecided whether
-to also wire it to vim's `shift+;` (`:`) or keep those separate.
+Invoked with `cmd/ctrl+shift+p` for commands and `cmd/ctrl+p` for quick-open,
+like most systems use these days. Undecided whether to also wire either one to
+vim's `shift+;` (`:`) or keep those separate.
 
 Things it would do:
 

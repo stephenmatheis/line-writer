@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { seedNote, openPalette, runCommand } from './utils';
+import { seedNote, openPalette, openQuickOpen, runCommand } from './utils';
 
 const NOTE = 'groceries\nmilk\neggs';
 
@@ -27,24 +27,24 @@ test.describe('notes', () => {
     });
 
     test('new note opens empty and keeps the old one around', async ({ page }) => {
-        await openPalette(page);
+        await openQuickOpen(page);
         await runCommand(page, 'new note');
 
         await expect(page.locator('textarea#editor')).toHaveValue('');
         expect(await notesIndex(page)).toHaveLength(2);
     });
 
-    test('a note title matches directly, no "Open note" submenu needed', async ({ page }) => {
-        await openPalette(page);
+    test('a note title matches directly in quick-open (mod+p)', async ({ page }) => {
+        await openQuickOpen(page);
         await runCommand(page, 'new note');
         await page.keyboard.type('second note stuff');
 
-        await openPalette(page);
+        await openQuickOpen(page);
         await runCommand(page, 'groceries');
 
         await expect(page.locator('textarea#editor')).toHaveValue(NOTE);
 
-        await openPalette(page);
+        await openQuickOpen(page);
         await runCommand(page, 'second');
 
         await expect(page.locator('textarea#editor')).toHaveValue('second note stuff');
@@ -54,14 +54,14 @@ test.describe('notes', () => {
         await page.keyboard.press('ControlOrMeta+a');
         await page.keyboard.type('a better title');
 
-        await openPalette(page);
+        await openQuickOpen(page);
         await page.keyboard.type('a better title');
 
         await expect(page.locator('[data-no-refocus] [class*=item] [class*=label]')).toHaveText(['a better title']);
     });
 
     test('deleting the open note falls back to another one', async ({ page }) => {
-        await openPalette(page);
+        await openQuickOpen(page);
         await runCommand(page, 'new note');
         await page.keyboard.type('second note stuff');
 

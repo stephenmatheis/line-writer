@@ -5,10 +5,16 @@ const NOTE = 'hello world note';
 const palette = '[data-no-refocus]';
 const paletteInput = `${palette} input`;
 const paletteLabels = `${palette} [class*=item] [class*=label]`;
-const paletteGroups = `${palette} [class*=group]`;
 
+// mod+shift+p - commands: manage, customize, share (no notes in this list)
 async function openPalette(page: import('@playwright/test').Page) {
     await page.keyboard.press('ControlOrMeta+Shift+KeyP');
+    await page.waitForSelector(paletteInput);
+}
+
+// mod+p - quick-open: jump straight to a note, or start a new one
+async function openQuickOpen(page: import('@playwright/test').Page) {
+    await page.keyboard.press('ControlOrMeta+KeyP');
     await page.waitForSelector(paletteInput);
 }
 
@@ -39,7 +45,7 @@ test.describe('command palette', () => {
         // in the delete-note picker now - escape should return to the commands
         await page.keyboard.press('Escape');
 
-        await expect(page.locator(paletteLabels).filter({ hasText: 'New note' })).toHaveCount(1);
+        await expect(page.locator(paletteLabels).filter({ hasText: 'Delete note...' })).toHaveCount(1);
 
         // and only a second escape closes the palette
         await page.keyboard.press('Escape');
@@ -73,7 +79,7 @@ test.describe('command palette', () => {
         // one escape pops out of the note picker straight to the top level
         await page.keyboard.press('Escape');
 
-        await expect(page.locator(paletteLabels).filter({ hasText: 'New note' })).toHaveCount(1);
+        await expect(page.locator(paletteLabels).filter({ hasText: 'Delete note...' })).toHaveCount(1);
     });
 
     test('filters to a theme command and runs it', async ({ page }) => {
@@ -117,32 +123,6 @@ test.describe('command palette', () => {
         await expect(page.locator(paletteLabels).filter({ hasText: 'Theme: Light' })).toHaveCount(1);
     });
 
-    test('note titles are searchable directly, no "Open note" submenu needed', async ({ page }) => {
-        await openPalette(page);
-        await page.keyboard.type('hello world');
-
-        await expect(page.locator(paletteLabels)).toHaveText(['hello world note']);
-    });
-
-    test('groups notes and commands into labeled sections when both are visible', async ({ page }) => {
-        await openPalette(page);
-
-        await expect(page.locator(paletteGroups)).toHaveText(['Notes', 'Commands']);
-
-        // narrowing to a single group drops the headers entirely
-        await page.keyboard.type('dar');
-
-        await expect(page.locator(paletteGroups)).toHaveCount(0);
-    });
-
-    test('a sub-list (single group) never shows section headers', async ({ page }) => {
-        await openPalette(page);
-        await page.keyboard.type('font');
-        await page.keyboard.press('Enter');
-
-        await expect(page.locator(paletteGroups)).toHaveCount(0);
-    });
-
     test('resets the query when reopened (regression, ISSUES.md #1)', async ({ page }) => {
         await openPalette(page);
         await page.keyboard.type('thl');
@@ -156,6 +136,34 @@ test.describe('command palette', () => {
         await page.keyboard.type('share');
 
         await expect(page.locator(paletteLabels)).toHaveText(['Copy share link']);
+    });
+});
+
+test.describe('quick open', () => {
+    test('opens with mod+p and focuses the input', async ({ page }) => {
+        await openQuickOpen(page);
+
+        await expect(page.locator(paletteInput)).toBeFocused();
+    });
+
+    test('lists notes directly, no commands mixed in', async ({ page }) => {
+        await openQuickOpen(page);
+
+        await expect(page.locator(paletteLabels)).toHaveText(['New note', NOTE]);
+    });
+
+    test('mod+shift+p (commands) does not include notes', async ({ page }) => {
+        await openPalette(page);
+        await page.keyboard.type('hello world');
+
+        await expect(page.locator(`${palette} [class*=empty]`)).toBeVisible();
+    });
+
+    test('either shortcut closes the palette while it is open', async ({ page }) => {
+        await openQuickOpen(page);
+        await page.keyboard.press('ControlOrMeta+Shift+KeyP');
+
+        await expect(page.locator(palette)).toHaveCount(0);
     });
 });
 

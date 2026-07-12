@@ -55,30 +55,35 @@ export function Commands({ activeId, onActiveIdChange }: { activeId: string; onA
     const { font, fontSize, lineHeight, width, setFont, setFontSize, setLineHeight, setWidth } = useFont();
     const { guides, setGuides } = useGuide();
 
-    // built fresh every time the palette opens, so note titles are current
-    function getCommands(): Command[] {
+    // mod+p - quick-open, VS Code/devtools style: jump straight to a note by
+    // title, or start a new one. Built fresh every open, so titles are current
+    function getQuickOpenCommands(): Command[] {
         const notes = listNotes();
 
         return [
             {
                 id: 'new-note',
                 label: 'New note',
-                group: 'Notes',
                 run: () => onActiveIdChange(createNote()),
             },
-            // one entry per note, searchable right alongside commands -
-            // no "Open note..." submenu to drill into first
             ...notes.map((note) => ({
                 id: `open-${note.id}`,
                 label: note.title,
                 hint: new Date(note.updatedAt).toLocaleDateString(),
                 active: note.id === activeId,
-                group: 'Notes',
                 run: () => {
                     setActiveNote(note.id);
                     onActiveIdChange(note.id);
                 },
             })),
+        ];
+    }
+
+    // mod+shift+p - everything else: manage, customize, share
+    function getCommands(): Command[] {
+        const notes = listNotes();
+
+        return [
             {
                 id: 'delete-note',
                 label: 'Delete note...',
@@ -214,5 +219,5 @@ export function Commands({ activeId, onActiveIdChange }: { activeId: string; onA
         ];
     }
 
-    return <CommandPalette getCommands={getCommands} />;
+    return <CommandPalette getCommands={getCommands} getQuickOpenCommands={getQuickOpenCommands} />;
 }
