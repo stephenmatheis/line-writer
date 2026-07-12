@@ -4,34 +4,38 @@
     z-index: 10000;
 
     .palette {
-        // same row height the editor's line grid uses (1rlh * the line
-        // height multiplier) - so the palette's density follows Line
-        // height... in the palette itself, not just the note
         --row-height: calc(1rlh * var(--line-height));
 
         position: absolute;
-        top: 50%;
+        top: calc(var(--row-height) * 1);
         left: 50%;
-        transform: translate(-50%, -50%);
+        transform: translateX(-50%);
         width: min(560px, calc(100vw - 32px));
         background-color: var(--background-color);
         border: solid 1px var(--color);
         overflow: hidden;
 
-        input {
-            width: 100%;
-            line-height: var(--row-height);
+        .field {
+            display: flex;
+            align-items: center;
             padding-inline: 2ch;
-            font-family: inherit;
-            font-size: var(--font-size);
-            color: var(--color);
-            background: none;
-            border: none;
-            outline: none;
             border-bottom: 1px solid var(--color);
 
-            &::placeholder {
-                color: var(--muted);
+            span {
+                display: inline-block;
+                padding-right: 1ch;
+            }
+
+            input {
+                width: 100%;
+                padding: 0;
+                line-height: var(--row-height);
+                font-family: inherit;
+                font-size: var(--font-size);
+                color: var(--color);
+                background: none;
+                border: none;
+                outline: none;
             }
         }
 
@@ -54,8 +58,6 @@
                     background-color: var(--container-color);
                 }
 
-                // while filtering, fade the label and let matched chars stay
-                // dark - same visual language as the editor's focus line
                 &.filtered .label {
                     color: var(--muted);
 

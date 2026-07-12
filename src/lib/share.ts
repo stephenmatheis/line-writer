@@ -1,7 +1,3 @@
-// Share links pack the whole note into the URL hash: deflate-compressed when
-// the browser has CompressionStream, plain utf-8 otherwise. The first payload
-// character says which ('d' or 'r') so links decode anywhere.
-
 function bytesToBase64Url(bytes: Uint8Array) {
     let binary = '';
 
@@ -24,7 +20,6 @@ function base64UrlToBytes(encoded: string) {
 }
 
 async function pipeThrough(bytes: Uint8Array, transform: CompressionStream | DecompressionStream) {
-    // copy into a fresh array so TS knows the buffer is a plain ArrayBuffer
     const stream = new Blob([new Uint8Array(bytes)]).stream().pipeThrough(transform);
 
     return new Uint8Array(await new Response(stream).arrayBuffer());

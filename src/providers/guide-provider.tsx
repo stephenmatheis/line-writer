@@ -2,33 +2,33 @@
 
 import { createContext, useContext, useState, ReactNode } from 'react';
 
-type DebugContextType = {
+type GuideContextType = {
     guides: boolean;
     setGuides: (guides: boolean) => void;
 };
 
-const DebugContext = createContext<DebugContextType | undefined>(undefined);
+const GuideContext = createContext<GuideContextType | undefined>(undefined);
 
-export function useDebug() {
-    const context = useContext(DebugContext);
+export function useGuide() {
+    const context = useContext(GuideContext);
 
     if (!context) {
-        throw new Error('useDebug must be used within a DebugProvider');
+        throw new Error('useGuide must be used within a GuideProvider');
     }
 
     return context;
 }
 
-// Off by default - the red guide bar and tinted editor background are
-// layout-debugging aids, not something a note-taking session should show.
-export function DebugProvider({ children }: { children: ReactNode }) {
+export function GuideProvider({ children }: { children: ReactNode }) {
     const [guides, setGuidesState] = useState<boolean>(() => localStorage.getItem('debug-guides') === 'true');
 
     function setGuides(next: boolean) {
         localStorage.setItem('debug-guides', String(next));
+
         document.documentElement.setAttribute('data-debug-guides', String(next));
+
         setGuidesState(next);
     }
 
-    return <DebugContext.Provider value={{ guides, setGuides }}>{children}</DebugContext.Provider>;
+    return <GuideContext.Provider value={{ guides, setGuides }}>{children}</GuideContext.Provider>;
 }

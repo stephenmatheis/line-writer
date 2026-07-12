@@ -8,14 +8,9 @@ export type Command = {
     label: string;
     hint?: string;
     active?: boolean;
-    // a command usually does something, but it can hand back a sub-list
-    // instead (like a note picker) - the palette shows it and stays open
     run: () => void | Promise<void> | Command[];
 };
 
-// Case-insensitive subsequence match: every query char must appear in the
-// label, in order, but not necessarily adjacent. Returns which label indexes
-// matched plus a score that favors word starts and consecutive runs.
 function fuzzyMatch(query: string, label: string) {
     const q = query.toLowerCase();
     const l = label.toLowerCase();
@@ -45,9 +40,12 @@ function fuzzyMatch(query: string, label: string) {
     return { positions, score };
 }
 
-// commands are asked for at open time (not passed as a ready list) so
-// they're always fresh - note titles change with every keystroke
-export function CommandPalette({ getCommands }: { getCommands: () => Command[] }) {
+type CommandPaletteProps = {
+    // build commands list on open so they're always fresh (note titles change with every keystroke)
+    getCommands: () => Command[];
+};
+
+export function CommandPalette({ getCommands }: CommandPaletteProps) {
     const [isOpen, setIsOpen] = useState(false);
     // a stack of lists: drilling into a sub-list pushes, escape pops, and
     // escape on the last one closes the palette
@@ -205,18 +203,21 @@ export function CommandPalette({ getCommands }: { getCommands: () => Command[] }
             }}
         >
             <div className={styles.palette}>
-                <input
-                    ref={inputRef}
-                    type="text"
-                    value={query}
-                    placeholder="Type a command..."
-                    spellCheck={false}
-                    onChange={(event) => {
-                        setQuery(event.target.value);
-                        setSelected(0);
-                    }}
-                    onKeyDown={handleKeyDown}
-                />
+                <div className={styles.field}>
+                    <span>❭</span>
+                    <input
+                        ref={inputRef}
+                        type="text"
+                        value={query}
+                        autoComplete="off"
+                        spellCheck={false}
+                        onChange={(event) => {
+                            setQuery(event.target.value);
+                            setSelected(0);
+                        }}
+                        onKeyDown={handleKeyDown}
+                    />
+                </div>
                 <div ref={listRef} className={styles.list}>
                     {matches.length === 0 && <div className={styles.empty}>No matching commands</div>}
                     {matches.map(({ command, positions }, index) => (
