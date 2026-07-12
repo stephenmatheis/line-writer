@@ -45,8 +45,6 @@ export default function App() {
     // A share link arrived: decode the note out of the hash before the editor
     // mounts, so the editor initializes from the already-updated localStorage
     useEffect(() => {
-        console.log(ready);
-
         if (ready || importStarted.current) return;
 
         importStarted.current = true;
