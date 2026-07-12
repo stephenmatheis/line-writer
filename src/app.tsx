@@ -34,7 +34,7 @@ export default function App() {
 
                 setActiveId(createNote(imported));
             } catch (error) {
-                console.log('Error loading note.', error);
+                console.error('Error loading note.', error);
             }
 
             history.replaceState(null, '', location.pathname + location.search);
