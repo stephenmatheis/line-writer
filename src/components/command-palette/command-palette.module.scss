@@ -44,6 +44,18 @@
             padding: 1ch;
             max-height: calc(100dvh - (var(--row-height) * 2));
 
+            .group {
+                padding: 1ch 1ch 0.5ch;
+                font-size: calc(var(--font-size) * 0.8);
+                color: var(--muted);
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+
+                &:first-child {
+                    padding-top: 0.5ch;
+                }
+            }
+
             .item {
                 display: flex;
                 align-items: center;

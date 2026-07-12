@@ -63,6 +63,7 @@ export function Commands({ activeId, onActiveIdChange }: { activeId: string; onA
             {
                 id: 'new-note',
                 label: 'New note',
+                group: 'Notes',
                 run: () => onActiveIdChange(createNote()),
             },
             // one entry per note, searchable right alongside commands -
@@ -72,6 +73,7 @@ export function Commands({ activeId, onActiveIdChange }: { activeId: string; onA
                 label: note.title,
                 hint: new Date(note.updatedAt).toLocaleDateString(),
                 active: note.id === activeId,
+                group: 'Notes',
                 run: () => {
                     setActiveNote(note.id);
                     onActiveIdChange(note.id);

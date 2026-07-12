@@ -41,8 +41,12 @@ Ambitious. Start with the obvious:
 - **v6** SHIPPED search: note titles are flattened into the top-level palette
   list and fuzzy-matched right alongside commands - no "Open note..." submenu
   to drill into first. "Delete note..." keeps its own submenu since it's
-  destructive. Note _content_ search is out of scope for the palette (no room
-  for match context/snippets in a single-line list) - would need its own UI.
+  destructive. Results are grouped into labeled sections ("Notes" /
+  "Commands") whenever more than one group is present, so a mixed result
+  list still reads as two things instead of one blended pile; any
+  single-group list (every submenu) shows no headers at all. Note _content_
+  search is out of scope for the palette (no room for match context/snippets
+  in a single-line list) - would need its own UI.
 - **v7** TO DO colors (complimentary dark and light)
 - **v8** TO DO AI
 

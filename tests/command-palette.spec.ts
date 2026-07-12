@@ -5,6 +5,7 @@ const NOTE = 'hello world note';
 const palette = '[data-no-refocus]';
 const paletteInput = `${palette} input`;
 const paletteLabels = `${palette} [class*=item] [class*=label]`;
+const paletteGroups = `${palette} [class*=group]`;
 
 async function openPalette(page: import('@playwright/test').Page) {
     await page.keyboard.press('ControlOrMeta+Shift+KeyP');
@@ -121,6 +122,25 @@ test.describe('command palette', () => {
         await page.keyboard.type('hello world');
 
         await expect(page.locator(paletteLabels)).toHaveText(['hello world note']);
+    });
+
+    test('groups notes and commands into labeled sections when both are visible', async ({ page }) => {
+        await openPalette(page);
+
+        await expect(page.locator(paletteGroups)).toHaveText(['Notes', 'Commands']);
+
+        // narrowing to a single group drops the headers entirely
+        await page.keyboard.type('dar');
+
+        await expect(page.locator(paletteGroups)).toHaveCount(0);
+    });
+
+    test('a sub-list (single group) never shows section headers', async ({ page }) => {
+        await openPalette(page);
+        await page.keyboard.type('font');
+        await page.keyboard.press('Enter');
+
+        await expect(page.locator(paletteGroups)).toHaveCount(0);
     });
 
     test('resets the query when reopened (regression, ISSUES.md #1)', async ({ page }) => {

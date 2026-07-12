@@ -1,4 +1,4 @@
-import { KeyboardEvent, useEffect, useRef, useState } from 'react';
+import { Fragment, KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import classNames from 'classnames';
 import styles from './command-palette.module.scss';
@@ -8,6 +8,10 @@ export type Command = {
     label: string;
     hint?: string;
     active?: boolean;
+    // section header to group under when other groups are present too;
+    // ungrouped commands land in a shared "Commands" section. Single-group
+    // lists (every submenu) show no headers at all.
+    group?: string;
     run: () => void | Promise<void> | Command[];
 };
 
@@ -57,7 +61,7 @@ export function CommandPalette({ getCommands }: CommandPaletteProps) {
 
     const commandList = stack[stack.length - 1] ?? [];
 
-    const matches = query
+    const scored = query
         ? commandList
               .flatMap((command) => {
                   const match = fuzzyMatch(query, command.label);
@@ -66,6 +70,26 @@ export function CommandPalette({ getCommands }: CommandPaletteProps) {
               })
               .sort((a, b) => b.score - a.score)
         : commandList.map((command) => ({ command, positions: [] as number[] }));
+
+    // group into sections, in the order each group's first (best-ranked)
+    // match appears - a stable partition, so within-group order still
+    // reflects the score sort above. Ungrouped commands share one section.
+    const sections = new Map<string, typeof scored>();
+
+    for (const match of scored) {
+        const group = match.command.group ?? '';
+
+        if (!sections.has(group)) {
+            sections.set(group, []);
+        }
+
+        sections.get(group)!.push(match);
+    }
+
+    // only worth labeling sections when there's more than one - every
+    // submenu (font, theme, notes to delete...) is a single, uniform group
+    const showHeaders = sections.size > 1;
+    const matches = [...sections.values()].flat();
 
     // typing can shrink the list out from under the selection
     const selectedIndex = Math.min(selected, matches.length - 1);
@@ -220,22 +244,29 @@ export function CommandPalette({ getCommands }: CommandPaletteProps) {
                 </div>
                 <div ref={listRef} className={styles.list}>
                     {matches.length === 0 && <div className={styles.empty}>No matching commands</div>}
-                    {matches.map(({ command, positions }, index) => (
-                        <div
-                            key={command.id}
-                            className={classNames(styles.item, {
-                                [styles.selected]: index === selectedIndex,
-                                [styles.filtered]: query.length > 0,
-                            })}
-                            data-selected={index === selectedIndex || undefined}
-                            onMouseEnter={() => setSelected(index)}
-                            onClick={() => runCommand(command)}
-                        >
-                            <span className={styles.label}>{renderLabel(command.label, positions)}</span>
-                            {command.active && <span className={styles.active}>←</span>}
-                            {command.hint && <span className={styles.hint}>{command.hint}</span>}
-                        </div>
-                    ))}
+                    {matches.map(({ command, positions }, index) => {
+                        const group = command.group ?? '';
+                        const isNewGroup = showHeaders && group !== (matches[index - 1]?.command.group ?? '');
+
+                        return (
+                            <Fragment key={command.id}>
+                                {isNewGroup && <div className={styles.group}>{group || 'Commands'}</div>}
+                                <div
+                                    className={classNames(styles.item, {
+                                        [styles.selected]: index === selectedIndex,
+                                        [styles.filtered]: query.length > 0,
+                                    })}
+                                    data-selected={index === selectedIndex || undefined}
+                                    onMouseEnter={() => setSelected(index)}
+                                    onClick={() => runCommand(command)}
+                                >
+                                    <span className={styles.label}>{renderLabel(command.label, positions)}</span>
+                                    {command.active && <span className={styles.active}>←</span>}
+                                    {command.hint && <span className={styles.hint}>{command.hint}</span>}
+                                </div>
+                            </Fragment>
+                        );
+                    })}
                 </div>
             </div>
         </div>,
