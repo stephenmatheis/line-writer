@@ -51,7 +51,8 @@ export default function App() {
 
         importStarted.current = true;
 
-        (async () => {
+        // void: we kick this off and don't wait on it; errors are handled inside
+        void (async () => {
             try {
                 const imported = await decodeNote(location.hash.slice('#n:'.length));
                 const existing = localStorage.getItem('note') || '';

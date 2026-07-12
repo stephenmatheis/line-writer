@@ -5,7 +5,7 @@ Feature ideas, roughly in the order they came up. Nothing here is committed to y
 ## 1. Smarter focus highlighting — DONE (went with b, visual lines)
 
 Current behavior: everything after the last punctuation mark (`.` `!` `?`) is the
-*current* sentence and stays dark; everything before it is grayed out to keep focus
+_current_ sentence and stays dark; everything before it is grayed out to keep focus
 on what's being written. Works okay, but breaks on bullets and ellipses made with
 three periods.
 
