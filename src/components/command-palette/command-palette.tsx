@@ -49,11 +49,15 @@ function fuzzyMatch(query: string, label: string) {
 // they're always fresh - note titles change with every keystroke
 export function CommandPalette({ getCommands }: { getCommands: () => Command[] }) {
     const [isOpen, setIsOpen] = useState(false);
-    const [commandList, setCommandList] = useState<Command[]>([]);
+    // a stack of lists: drilling into a sub-list pushes, escape pops, and
+    // escape on the last one closes the palette
+    const [stack, setStack] = useState<Command[][]>([]);
     const [query, setQuery] = useState('');
     const [selected, setSelected] = useState(0);
     const inputRef = useRef<HTMLInputElement>(null);
     const listRef = useRef<HTMLDivElement>(null);
+
+    const commandList = stack[stack.length - 1] ?? [];
 
     const matches = query
         ? commandList
@@ -71,7 +75,7 @@ export function CommandPalette({ getCommands }: { getCommands: () => Command[] }
     // reset the query in the same render that opens, not an effect later -
     // an effect leaves a frame where typing appends to the previous query
     function open() {
-        setCommandList(getCommands());
+        setStack([getCommands()]);
         setQuery('');
         setSelected(0);
         setIsOpen(true);
@@ -112,7 +116,7 @@ export function CommandPalette({ getCommands }: { getCommands: () => Command[] }
 
         // drill into a sub-list instead of closing
         if (Array.isArray(result)) {
-            setCommandList(result);
+            setStack([...stack, result]);
             setQuery('');
             setSelected(0);
 
@@ -126,7 +130,14 @@ export function CommandPalette({ getCommands }: { getCommands: () => Command[] }
         if (event.key === 'Escape') {
             event.preventDefault();
 
-            setIsOpen(false);
+            // back out of a sub-list first; only close from the top level
+            if (stack.length > 1) {
+                setStack(stack.slice(0, -1));
+                setQuery('');
+                setSelected(0);
+            } else {
+                setIsOpen(false);
+            }
 
             return;
         }

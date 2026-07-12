@@ -30,6 +30,22 @@ test.describe('command palette', () => {
         await expect(page.locator('textarea#editor')).toBeFocused();
     });
 
+    test('escape backs out of a sub-list before closing', async ({ page }) => {
+        await openPalette(page);
+        await page.keyboard.type('open note');
+        await page.keyboard.press('Enter');
+
+        // in the notes picker now - escape should return to the commands
+        await page.keyboard.press('Escape');
+
+        await expect(page.locator(paletteLabels).filter({ hasText: 'New note' })).toHaveCount(1);
+
+        // and only a second escape closes the palette
+        await page.keyboard.press('Escape');
+
+        await expect(page.locator(palette)).toHaveCount(0);
+    });
+
     test('clicking inside the palette does not let the editor steal focus', async ({ page }) => {
         await openPalette(page);
         await page.click(paletteInput);
