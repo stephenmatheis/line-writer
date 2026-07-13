@@ -32,10 +32,18 @@ export function Editor({ noteId }: { noteId: string }) {
         const lineHeight = parseFloat(cs.lineHeight);
         const mirror = document.createElement('div');
 
+        // clientWidth is spec'd to round to an integer, but the textarea's
+        // actual CSS width (ch-based, so fractional at most font sizes) can
+        // land mid-pixel. Handing the mirror a rounded-down width makes it
+        // wrap one character earlier or later than the real, fractionally-
+        // sized textarea/overlay do - deterministically, on every measure,
+        // not a rendering-jitter thing. getBoundingClientRect keeps the
+        // fraction (there's no border/padding on the textarea for border-box
+        // vs content-box to matter here).
         mirror.style.position = 'absolute';
         mirror.style.visibility = 'hidden';
         mirror.style.boxSizing = 'border-box';
-        mirror.style.width = `${textArea.clientWidth}px`;
+        mirror.style.width = `${textArea.getBoundingClientRect().width}px`;
         mirror.style.fontFamily = cs.fontFamily;
         mirror.style.fontSize = cs.fontSize;
         mirror.style.lineHeight = cs.lineHeight;
@@ -49,19 +57,47 @@ export function Editor({ noteId }: { noteId: string }) {
         mirror.appendChild(textNode);
         document.body.appendChild(mirror);
 
-        const mirrorTop = mirror.getBoundingClientRect().top;
         const range = document.createRange();
+
+        // The browser's own row boxes, not a lineHeight-multiples grid.
+        // getComputedStyle's lineHeight is a rounded string, and dividing an
+        // accumulated pixel offset by that approximation drifts further off
+        // the more lines deep you measure - a few lines in, real font
+        // hinting/antialiasing has pulled far enough from the rounded value
+        // that Math.round tips the wrong way for whichever characters sit
+        // closest to a row boundary (typically the tail end of a line, or a
+        // character straddling a forced mid-word break). Reading the actual
+        // rendered rows once and snapping every character to its nearest one
+        // has no arithmetic to drift.
+        range.setStart(textNode, 0);
+        range.setEnd(textNode, text.length + 1);
+
+        const rowTops: number[] = [];
+
+        for (const rect of range.getClientRects()) {
+            if (!rowTops.some((top) => Math.abs(top - rect.top) < lineHeight / 2)) {
+                rowTops.push(rect.top);
+            }
+        }
+
+        rowTops.sort((a, b) => a - b);
 
         // Get visual line of the character at index i. A newline's rect sits at
         // the end of the line it terminates, which is the line it belongs to.
-        // The rect top is the top of the glyph box, which floats half-leading
-        // below the top of the full line box, so divide by line height and
-        // round to snap to a clean line index.
         function lineOfChar(i: number) {
             range.setStart(textNode, i);
             range.setEnd(textNode, i + 1);
 
-            return Math.round((range.getBoundingClientRect().top - mirrorTop) / lineHeight);
+            const top = range.getBoundingClientRect().top;
+            let closest = 0;
+
+            for (let line = 1; line < rowTops.length; line++) {
+                if (Math.abs(rowTops[line] - top) < Math.abs(rowTops[closest] - top)) {
+                    closest = line;
+                }
+            }
+
+            return closest;
         }
 
         // First index whose character sits on `line` or later. Walking
