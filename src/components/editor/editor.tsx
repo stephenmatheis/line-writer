@@ -220,5 +220,3 @@ export function Editor({ noteId }: { noteId: string }) {
         </div>
     );
 }
-
-export default Editor;
