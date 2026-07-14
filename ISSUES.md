@@ -35,6 +35,10 @@ Worth deciding what that surface is before wiring these two into it —
 a fix that adds a whole notification system for two edge cases might not
 be worth it. Documenting instead of fixing for now.
 
+### Decision
+
+Great callouts. Let's create a notification system to surface currently silent errors like this. I don't love or hate toasts. Modals that take over until dismissed are a bad call. Users (me included) typically dislike them. What over experiences are out there? I can't decided if a status bar at the bottom or pop up cards in the bottom right like VS CODE does it. Not sure what UX I want.
+
 ---
 
 ## #3 — Moving the caret without typing doesn't move the focus line
@@ -63,11 +67,17 @@ text — no `selectionchange`/`keyup`/`click` handler on the textarea.
 
 ### Why it's still open
 
-Might be half-intentional (a typewriter recentering on every arrow press
+Might be half-intentional (a typewriter re-centering on every arrow press
 could feel jumpy), but the first keystroke after a click visibly editing
 "somewhere else" feels like a bug. Needs a design call: recenter on any
 selection change, or keep centering input-driven and only sync the
 highlight. Documenting before changing behavior.
+
+### Decision
+
+I agree this is weird. Right now, moving the cursor up does nothing, like you state. Observed on my end. But if the cursor is moved with an arrow key above of below the viewport, scroll jumps to center the line where the cursor is but doesn't highlight. The originally centered line is still highlighted as well.
+
+Let's always keep the line with the cursor on it centered. Arrow or mouse click. Might be jumpy. But I'd like to see it in action before we say it's the wrong UX. Let me know if you think there's a better way.
 
 ---
 
