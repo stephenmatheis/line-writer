@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
 import { seedNote, openPalette, openQuickOpen, runCommand } from './utils';
 
@@ -90,6 +91,22 @@ test.describe('notes', () => {
 
         expect(index).toHaveLength(1);
         expect(index[0].id).not.toBe(before.id);
+    });
+
+    test('export downloads the note as <title>.txt', async ({ page }) => {
+        await openPalette(page);
+        // not runCommand here - the download listener has to be armed
+        // before Enter fires the command, or the event slips past it
+        await page.keyboard.type('export');
+
+        const downloadPromise = page.waitForEvent('download');
+
+        await page.keyboard.press('Enter');
+
+        const download = await downloadPromise;
+
+        expect(download.suggestedFilename()).toBe('groceries.txt');
+        expect(readFileSync(await download.path(), 'utf-8')).toBe(NOTE);
     });
 
     test('a dismissed delete confirm leaves everything alone', async ({ page }) => {

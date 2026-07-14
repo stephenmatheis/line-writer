@@ -223,3 +223,53 @@ test.describe('share links', () => {
         await otherContext.close();
     });
 });
+
+test.describe('clipboard', () => {
+    test.skip(({ browserName }) => browserName !== 'chromium', 'needs Chromium clipboard permissions');
+
+    test('copy note puts the exact note text on the clipboard', async ({ page }) => {
+        await openPalette(page);
+        await page.keyboard.type('copy note');
+        await page.keyboard.press('Enter');
+
+        await expect.poll(() => page.evaluate(() => navigator.clipboard.readText()), { timeout: 5000 }).toBe(NOTE);
+    });
+});
+
+test.describe('share link import', () => {
+    // the 'r' (raw, uncompressed) payload is what encodeNote falls back to
+    // on browsers without CompressionStream. Neither test browser is that
+    // old, so build the payload by hand to keep the decode branch covered
+    test('a raw payload imports as a new note', async ({ page }) => {
+        const text = 'raw payload note';
+        const payload = 'r' + Buffer.from(text, 'utf-8').toString('base64url');
+
+        // goto with only a hash change is same-document; reload to remount
+        await page.goto(`/#n:${payload}`);
+        await page.reload();
+        await page.waitForSelector('textarea#editor');
+
+        await expect(page.locator('textarea#editor')).toHaveValue(text);
+        expect(await page.evaluate(() => location.hash)).toBe('');
+    });
+
+    test('a corrupt payload still boots on the previous note', async ({ page }) => {
+        // two ways a link goes bad: an unknown kind byte, and base64 that
+        // won't even parse (a truncated or mangled URL)
+        for (const payload of ['zAAAA', 'd!!!']) {
+            await page.goto(`/#n:${payload}`);
+            await page.reload();
+            await page.waitForSelector('textarea#editor');
+
+            await expect(page.locator('textarea#editor')).toHaveValue(NOTE);
+            expect(await page.evaluate(() => location.hash)).toBe('');
+        }
+
+        // and no phantom note got added along the way
+        const titles = await page.evaluate(() =>
+            JSON.parse(localStorage.getItem('notes') || '[]').map((note: { title: string }) => note.title),
+        );
+
+        expect(titles).toEqual([NOTE]);
+    });
+});
