@@ -3,6 +3,7 @@ import { useTheme, Theme } from '@/providers/theme-provider';
 import { useColor, COLOR_SCHEMES } from '@/providers/color-provider';
 import { useFont, Font, FontSize, LINE_HEIGHTS, WIDTHS } from '@/providers/font-provider';
 import { useGuide } from '@/providers/guide-provider';
+import { useStatus } from '@/providers/status-provider';
 import { encodeNote } from '@/lib/share';
 import { createNote, deleteNote, listNotes, noteContent, setActiveNote } from '@/lib/notes';
 
@@ -58,6 +59,23 @@ export function Commands({ activeId, onActiveIdChange }: { activeId: string; onA
     const { color, setColor } = useColor();
     const { font, fontSize, lineHeight, width, setFont, setFontSize, setLineHeight, setWidth } = useFont();
     const { guides, setGuides } = useGuide();
+    const { notify } = useStatus();
+
+    // issue #4: writeText rejects when the document isn't focused or the
+    // clipboard is blocked (permissions, plain-http hosts where
+    // navigator.clipboard is undefined). Both used to fail silently - the
+    // palette closed like it worked and the clipboard held whatever it held.
+    async function copyToClipboard(text: string, confirmation: string) {
+        try {
+            await navigator.clipboard.writeText(text);
+
+            notify(confirmation);
+        } catch (error) {
+            console.error('Error copying to clipboard.', error);
+
+            notify("Couldn't copy - the browser blocked clipboard access", 'error');
+        }
+    }
 
     // mod+p - quick-open, VS Code/devtools style: jump straight to a note by
     // title, or start a new one. Built fresh every open, so titles are current
@@ -221,7 +239,7 @@ export function Commands({ activeId, onActiveIdChange }: { activeId: string; onA
                 run: async () => {
                     const url = `${location.origin}${location.pathname}#n:${await encodeNote(noteContent(activeId))}`;
 
-                    await navigator.clipboard.writeText(url);
+                    await copyToClipboard(url, 'Copied share link');
                 },
             },
             {
@@ -229,7 +247,7 @@ export function Commands({ activeId, onActiveIdChange }: { activeId: string; onA
                 label: 'Copy note',
                 hint: 'to clipboard',
                 run: async () => {
-                    await navigator.clipboard.writeText(noteContent(activeId));
+                    await copyToClipboard(noteContent(activeId), 'Copied note');
                 },
             },
         ];

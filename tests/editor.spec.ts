@@ -63,6 +63,64 @@ test.describe('typewriter editor', () => {
         expect(Math.abs(state.offCenter)).toBeLessThan(1);
     });
 
+    // Issue #3: the highlight and centering used to only react to input, so
+    // arrow keys and clicks left them stuck on the old line until the next
+    // keystroke - which then landed somewhere that looked wrong.
+    test('arrow keys alone move the highlight and re-center', async ({ page }) => {
+        await seedNote(page, TWELVE_LINES);
+
+        for (let i = 0; i < 3; i++) {
+            await page.keyboard.press('ArrowUp');
+        }
+
+        const state = await caretState(page);
+
+        expect(state.spanText).toBe('line number 9\n');
+        expect(Math.abs(state.offCenter)).toBeLessThan(1);
+    });
+
+    test('clicking another line moves the highlight and re-centers', async ({ page }) => {
+        await seedNote(page, TWELVE_LINES);
+
+        // aim at line 5 using the real line grid (the highlight span's own
+        // rect is the text box, not the 1lh-tall row, so don't measure that)
+        const target = await page.evaluate(() => {
+            const textArea = document.querySelector('textarea#editor') as HTMLTextAreaElement;
+            const rect = textArea.getBoundingClientRect();
+            const lineHeight = parseFloat(getComputedStyle(textArea).lineHeight);
+
+            return { x: rect.left + 5, y: rect.top + 4 * lineHeight + lineHeight / 2 };
+        });
+
+        await page.mouse.click(target.x, target.y);
+
+        const state = await caretState(page);
+
+        expect(state.spanText).toBe('line number 5\n');
+        expect(Math.abs(state.offCenter)).toBeLessThan(1);
+    });
+
+    test('shift-selecting follows the active end without collapsing', async ({ page }) => {
+        await seedNote(page, TWELVE_LINES);
+
+        await page.keyboard.press('Shift+ArrowUp');
+
+        const selection = await page.evaluate(() => {
+            const textArea = document.querySelector('textarea#editor') as HTMLTextAreaElement;
+
+            return { start: textArea.selectionStart, end: textArea.selectionEnd };
+        });
+
+        // the range survives (cursorPos tracking must not collapse it) and
+        // the highlight sits on the end being dragged, not the anchor
+        expect(selection.start).toBeLessThan(selection.end);
+
+        const state = await caretState(page);
+
+        expect(state.spanText).toBe('line number 11\n');
+        expect(Math.abs(state.offCenter)).toBeLessThan(1);
+    });
+
     test('the textarea grows and shrinks with content', async ({ page }) => {
         await seedNote(page, '');
 

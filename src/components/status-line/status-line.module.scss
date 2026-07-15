@@ -1,0 +1,27 @@
+.status {
+    position: fixed;
+    left: 50%;
+    bottom: calc(1rlh * var(--line-height) / 2);
+    transform: translateX(-50%);
+    max-width: var(--editor-width);
+    padding: 0 1ch;
+    line-height: calc(1rlh * var(--line-height));
+    text-align: center;
+    color: var(--muted-dark);
+    // text can scroll under the status line (the note keeps going below the
+    // centered caret), so give it the page background to stay readable
+    background-color: var(--background-color);
+    opacity: 0;
+    transition: opacity 300ms ease;
+    // never steal clicks - the window's click-to-refocus should pass through
+    pointer-events: none;
+    z-index: 3;
+
+    &.visible {
+        opacity: 1;
+    }
+
+    &.error {
+        color: var(--color);
+    }
+}

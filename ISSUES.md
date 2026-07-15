@@ -8,8 +8,9 @@ Running log of bugs found and fixed. Newest first.
 
 |               |                                                       |
 | ------------- | ----------------------------------------------------- |
-| **Status**    | Open                                                  |
+| **Status**    | Closed                                                |
 | **Opened**    | 2026-07-13                                            |
+| **Closed**    | 2026-07-14                                            |
 | **Severity**  | Low                                                   |
 | **Component** | `src/components/commands/commands.tsx`, `src/app.tsx` |
 | **Found by**  | Code review                                           |
@@ -39,14 +40,53 @@ be worth it. Documenting instead of fixing for now.
 
 Great callouts. Let's create a notification system to surface currently silent errors like this. I don't love or hate toasts. Modals that take over until dismissed are a bad call. Users (me included) typically dislike them. What over experiences are out there? I can't decided if a status bar at the bottom or pop up cards in the bottom right like VS CODE does it. Not sure what UX I want.
 
+Went with an ephemeral status line: one small line of text, bottom
+center, in the editor's font, that fades in and auto-dismisses. VS
+Code-style cards exist because an IDE has dozens of notification
+sources; this app has two error cases and a couple of confirmations, so
+one message at a time (newest wins) is plenty. A persistent status bar
+would be permanent chrome for something that fires rarely - against the
+whole blank-page idea.
+
+### Fix
+
+New `StatusProvider` (`src/providers/status-provider.tsx`) exposes
+`notify(text, kind?)` and owns the show/fade timing: info messages sit
+for 4s, errors for 8s, then fade out via CSS. `StatusLine`
+(`src/components/status-line/`) renders the message fixed at bottom
+center - muted color for info, full text color for errors, page
+background behind it so it stays readable when the note scrolls under
+it, `pointer-events: none` so it never steals the click-to-refocus.
+It announces as `role="status"` / `role="alert"` for screen readers.
+
+Wired into both silent flows:
+
+- **Copy note / Copy share link** now go through a shared
+  `copyToClipboard` helper that confirms ("Copied note") or reports
+  ("Couldn't copy - the browser blocked clipboard access").
+- **Corrupt share links** report "Couldn't open the share link - it
+  looks broken or incomplete" instead of silently showing the previous
+  note.
+
+The provider wraps `<App />` in `main.tsx` (not inside `app.tsx` with
+the others) because App itself needs `notify` for the import error.
+
+### Regression test
+
+`tests/status.spec.ts` — "copy note confirms on the status line",
+"a blocked clipboard shows an error instead of failing silently",
+"a corrupt share link shows an error and falls back to the active
+note".
+
 ---
 
 ## #3 — Moving the caret without typing doesn't move the focus line
 
 |               |                                    |
 | ------------- | ---------------------------------- |
-| **Status**    | Open                               |
+| **Status**    | Closed                             |
 | **Opened**    | 2026-07-13                         |
+| **Closed**    | 2026-07-14                         |
 | **Severity**  | Medium                             |
 | **Component** | `src/components/editor/editor.tsx` |
 | **Found by**  | Code review                        |
@@ -69,7 +109,7 @@ text — no `selectionchange`/`keyup`/`click` handler on the textarea.
 
 Might be half-intentional (a typewriter re-centering on every arrow press
 could feel jumpy), but the first keystroke after a click visibly editing
-"somewhere else" feels like a bug. Needs a design call: recenter on any
+"somewhere else" feels like a bug. Needs a design call: re-center on any
 selection change, or keep centering input-driven and only sync the
 highlight. Documenting before changing behavior.
 
@@ -78,6 +118,31 @@ highlight. Documenting before changing behavior.
 I agree this is weird. Right now, moving the cursor up does nothing, like you state. Observed on my end. But if the cursor is moved with an arrow key above of below the viewport, scroll jumps to center the line where the cursor is but doesn't highlight. The originally centered line is still highlighted as well.
 
 Let's always keep the line with the cursor on it centered. Arrow or mouse click. Might be jumpy. But I'd like to see it in action before we say it's the wrong UX. Let me know if you think there's a better way.
+
+### Fix
+
+Added `onSelect` to the textarea. React fires it on every caret move —
+arrow keys, clicks, drags — not just input, so feeding `cursorPos` from it
+runs the existing measure/center/highlight effect for free. For range
+selections, `cursorPos` follows the end the user is actively dragging
+(`selectionDirection`), so shift+arrows and mouse drags center the line
+that's growing, not the anchor.
+
+One landmine: the old effect that synced `selectionStart`/`End` from
+`cursorPos` ran on every change, which would have collapsed any range the
+moment `onSelect` reported it. It only ever existed to put the caret at
+the end of the note on mount, so it's mount-only now.
+
+Verified in the running app (Chromium): arrows, clicks, shift-selection,
+and mouse drags all re-center to within 1px with the highlight following;
+selections survive. The scroll-jump-without-highlight behavior from the
+decision notes is gone.
+
+### Regression test
+
+`tests/editor.spec.ts` — "arrow keys alone move the highlight and
+re-center", "clicking another line moves the highlight and re-centers",
+"shift-selecting follows the active end without collapsing".
 
 ---
 
