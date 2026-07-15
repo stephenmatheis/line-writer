@@ -4,6 +4,46 @@ Running log of bugs found and fixed. Newest first.
 
 ---
 
+## #7 — Reverted caret-move/drag re-centering from #3 and #6
+
+|               |                                    |
+| ------------- | ---------------------------------- |
+| **Status**    | Closed                             |
+| **Opened**    | 2026-07-15                         |
+| **Closed**    | 2026-07-15                         |
+| **Severity**  | N/A (design decision, not a bug)   |
+| **Component** | `src/components/editor/editor.tsx` |
+| **Found by**  | Simplification decision            |
+
+### What changed
+
+The `selectionchange`/`mouseup`/`mousedown` machinery added for #3 (caret-
+move re-centering) and #6 (drag-select without corrupting the selection or
+scrolling under the pointer) has been removed. The editor now re-centers
+and re-highlights only in response to text edits (`handleInput`) - moving
+the caret with arrow keys, clicking another line, or drag-selecting no
+longer touches `cursorPos`, `focusRange`, or scroll position.
+
+### Why
+
+The mouse/selectionchange machinery was a lot of surface area (a
+`mousedown` handler, a `mouseup` handler, a document-level
+`selectionchange` listener, direction-tracking, scroll-behavior state) for
+UX that wasn't worth the complexity it added. Simpler mechanism wins:
+centering that only reacts to edits is easy to reason about and has no
+drag-corruption or race conditions to guard against in the first place.
+
+### Consequence
+
+#3 and #6 stay "Closed" below as an accurate record of the bugs that
+existed and how they were fixed _at the time_ - but both fixes have since
+been superseded by this entry. The regression tests written for them
+(`tests/editor.spec.ts` - the arrow-key, click, drag, and shift-select
+re-centering tests) were removed rather than updated, since they asserted
+behavior that no longer exists by design.
+
+---
+
 ## #6 — Re-centering during mouse drags made selection nearly unusable
 
 |               |                                    |
@@ -56,6 +96,10 @@ via `selectionDirection`, which keyboard selections always report.
 until release" (asserts zero scroll during the drag, the range
 surviving, and the dragged end centered after release, in both
 engines - the WebKit run guards the selection-corruption case).
+
+**Superseded by [#7](#7--reverted-caret-movedrag-re-centering-from-3-and-6):**
+this fix was later removed as part of a simplification; drag-selects no
+longer re-center at all.
 
 ---
 
@@ -261,6 +305,10 @@ decision notes is gone.
 `tests/editor.spec.ts` — "arrow keys alone move the highlight and
 re-center", "clicking another line moves the highlight and re-centers",
 "shift-selecting follows the active end without collapsing".
+
+**Superseded by [#7](#7--reverted-caret-movedrag-re-centering-from-3-and-6):**
+this fix was later removed as part of a simplification; arrow keys and
+clicks no longer re-center at all.
 
 ---
 
