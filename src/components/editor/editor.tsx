@@ -1,4 +1,4 @@
-import { ChangeEvent, useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { ChangeEvent, SyntheticEvent, useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { noteContent, saveNote } from '@/lib/notes';
 import { useFont } from '@/providers/font-provider';
 import styles from './editor.module.scss';
@@ -20,6 +20,19 @@ export function Editor({ noteId }: { noteId: string }) {
 
         setContent(newText);
         setCursorPos(event.target.selectionStart || 0);
+    }
+
+    // The caret can move without the text changing - arrow keys, clicking
+    // into another line, cmd+arrow jumps. onChange never fires for those, so
+    // the highlight and centering used to sit on the old line until the next
+    // keystroke. onSelect fires on every caret move, typed or not, and
+    // feeding cursorPos from here re-runs the same measure/center effect
+    // typing does. For a range selection, follow the end the user is
+    // actively dragging (selectionDirection), not just selectionStart.
+    function handleSelect(event: SyntheticEvent<HTMLTextAreaElement>) {
+        const node = event.currentTarget;
+
+        setCursorPos(node.selectionDirection === 'backward' ? node.selectionStart : node.selectionEnd);
     }
 
     function resize(node: HTMLElement) {
@@ -192,12 +205,14 @@ export function Editor({ noteId }: { noteId: string }) {
         };
     }, []);
 
+    // Put the caret at the end of the note on mount (autoFocus alone leaves
+    // it wherever the browser feels like). Mount-only on purpose: cursorPos
+    // now also tracks selections via onSelect, and re-running this on every
+    // change would collapse any range the user drags out.
     useEffect(() => {
-        if (textAreaRef.current) {
-            textAreaRef.current.selectionStart = cursorPos;
-            textAreaRef.current.selectionEnd = cursorPos;
-        }
-    }, [cursorPos]);
+        textAreaRef.current?.setSelectionRange(cursorPos, cursorPos);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <div ref={editorRef} className={styles.editor} style={{ opacity: '0' }}>
@@ -210,6 +225,7 @@ export function Editor({ noteId }: { noteId: string }) {
                 ref={textAreaRef}
                 value={content}
                 onChange={handleInput}
+                onSelect={handleSelect}
                 autoFocus
                 rows={1}
                 spellCheck={false}
