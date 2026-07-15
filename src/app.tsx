@@ -18,13 +18,11 @@ export default function App() {
     const importStarted = useRef(false);
 
     useEffect(() => {
-        async function waitForFontsToBeLoaded() {
+        void (async () => {
             await document.fonts.ready;
 
             setFontsReady(true);
-        }
-
-        waitForFontsToBeLoaded();
+        })();
     }, []);
 
     useEffect(() => {
@@ -32,7 +30,7 @@ export default function App() {
 
         importStarted.current = true;
 
-        async function loadNote() {
+        void (async () => {
             try {
                 const imported = await decodeNote(location.hash.slice('#n:'.length));
 
@@ -48,9 +46,7 @@ export default function App() {
             history.replaceState(null, '', location.pathname + location.search);
 
             setReady(true);
-        }
-
-        loadNote();
+        })();
     }, [ready, notify]);
 
     return (
