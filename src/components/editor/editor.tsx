@@ -12,19 +12,6 @@ export function Editor({ noteId }: { noteId: string }) {
     const [focusRange, setFocusRange] = useState({ start: 0, end: 0 });
     const editorRef = useRef<HTMLDivElement>(null);
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
-    // While the mouse button is down the world has to hold still. Two
-    // reasons: re-centering mid-drag scrolls the text out from under the
-    // pointer (click-and-drag becomes aiming at a moving target), and even
-    // just re-rendering mid-drag corrupts WebKit's drag selection (observed:
-    // the selection start snapped to 0 on the first drag movement). So caret
-    // updates are held back until mouseup, which does one deferred
-    // re-center with a glide.
-    const mouseDown = useRef(false);
-    // how the next re-center scrolls: keyboard and typing jump instantly
-    // (the typewriter feel), mouseup sets 'smooth' so the clicked line
-    // glides to center instead of jumping. Consumed and reset by the
-    // scroll effect.
-    const scrollBehavior = useRef<ScrollBehavior>('auto');
 
     function handleInput(event: ChangeEvent<HTMLTextAreaElement>) {
         const newText = event.target.value;
@@ -146,18 +133,13 @@ export function Editor({ noteId }: { noteId: string }) {
         return { caretLine, lineStart, lineEnd, lineHeight };
     }
 
-    function scrollCaretLineToCenter(
-        textArea: HTMLTextAreaElement,
-        caretLine: number,
-        lineHeight: number,
-        behavior: ScrollBehavior,
-    ) {
+    function scrollCaretLineToCenter(textArea: HTMLTextAreaElement, caretLine: number, lineHeight: number) {
         const caretLineCenter =
             textArea.getBoundingClientRect().top + window.scrollY + caretLine * lineHeight + lineHeight / 2;
 
         window.scrollTo({
             top: caretLineCenter - window.innerHeight / 2,
-            behavior,
+            behavior: 'auto',
         });
     }
 
@@ -168,11 +150,12 @@ export function Editor({ noteId }: { noteId: string }) {
 
         const { caretLine, lineStart, lineEnd, lineHeight } = measureCaretLine(textAreaRef.current, content, cursorPos);
 
-        scrollCaretLineToCenter(textAreaRef.current, caretLine, lineHeight, scrollBehavior.current);
-        scrollBehavior.current = 'auto';
+        scrollCaretLineToCenter(textAreaRef.current, caretLine, lineHeight);
+
         setFocusRange((prev) =>
             prev.start === lineStart && prev.end === lineEnd ? prev : { start: lineStart, end: lineEnd },
         );
+
         // the typography settings matter here too: changing any of them moves
         // wrap points, the ch-based width, or the line grid itself, so
         // everything needs measuring again
@@ -182,67 +165,6 @@ export function Editor({ noteId }: { noteId: string }) {
         if (editorRef.current) {
             editorRef.current.style.opacity = '1';
         }
-
-        // The caret can move without the text changing - arrow keys, clicks,
-        // drags - and onChange never fires for those. React's synthetic
-        // onSelect can't drive this either: its select plugin never sees the
-        // native selectionchange (it fires at document and doesn't bubble
-        // through React's root), so it only synthesizes the event while
-        // processing some other input - measured on this app, arrow presses
-        // didn't re-center until the NEXT key went down. The native event
-        // fires as soon as the browser moves the caret, so listen to it
-        // directly.
-        function handleSelectionChange() {
-            const node = textAreaRef.current;
-
-            if (!node || document.activeElement !== node) return;
-            if (mouseDown.current) return;
-
-            const { selectionStart: start, selectionEnd: end, selectionDirection } = node;
-
-            // a range with no direction is mouse-made (keyboard selections
-            // always report one) - those resolve in the mouseup handler,
-            // and a trailing selectionchange must not second-guess it
-            if (start !== end && selectionDirection === 'none') return;
-
-            // for keyboard selections, follow the end the user is moving
-            setCursorPos(selectionDirection === 'backward' ? start : end);
-        }
-
-        document.addEventListener('selectionchange', handleSelectionChange);
-
-        // The deferred half of the mouse story: the world held still through
-        // the click or drag, now move the highlight and glide the caret line
-        // to center. For a drag that leaves a range, the line to center is
-        // the end the user dragged - selectionDirection is 'none' for mouse
-        // selections in both Chrome and WebKit, but the released pointer is
-        // sitting on the end that moved, so pick the end nearest to it.
-        function handleMouseUp(event: MouseEvent) {
-            if (!mouseDown.current) return;
-
-            mouseDown.current = false;
-
-            const node = textAreaRef.current;
-
-            if (!node) return;
-
-            const { selectionStart: start, selectionEnd: end } = node;
-            let caret = end;
-
-            if (start !== end) {
-                const lineHeight = parseFloat(getComputedStyle(node).lineHeight);
-                const releaseLine = (event.clientY - node.getBoundingClientRect().top) / lineHeight - 0.5;
-                const startLine = measureCaretLine(node, node.value, start).caretLine;
-                const endLine = measureCaretLine(node, node.value, end).caretLine;
-
-                caret = Math.abs(startLine - releaseLine) < Math.abs(endLine - releaseLine) ? start : end;
-            }
-
-            scrollBehavior.current = 'smooth';
-            setCursorPos(caret);
-        }
-
-        window.addEventListener('mouseup', handleMouseUp);
 
         // FIXME: Scrolls on mobile when clicking menu
         window.addEventListener('click', focus);
@@ -261,8 +183,7 @@ export function Editor({ noteId }: { noteId: string }) {
 
             // Already focused? Then there's nothing to restore - bail before
             // the removeAllRanges/focus below can do damage. A drag that
-            // ends outside the textarea (or a click whose mouseup glide has
-            // already nudged the page) makes event.target an ancestor, not
+            // ends outside the textarea makes event.target an ancestor, not
             // the textarea. Without this guard that reads as an "outside"
             // click and clears the document selection, which in WebKit also
             // resets the textarea's caret to 0 - throwing you to the top of
@@ -281,17 +202,14 @@ export function Editor({ noteId }: { noteId: string }) {
         }
 
         return () => {
-            document.removeEventListener('selectionchange', handleSelectionChange);
-            window.removeEventListener('mouseup', handleMouseUp);
             window.removeEventListener('click', focus);
         };
     }, []);
 
     // Put the caret at the end of the note on mount (autoFocus alone leaves
-    // it wherever the browser feels like). Mount-only on purpose: cursorPos
-    // now also tracks selections via the selectionchange listener, and
-    // re-running this on every change would collapse any range the user
-    // drags out.
+    // it wherever the browser feels like). Mount-only on purpose: only edits
+    // update cursorPos after this, and re-running this on every change would
+    // collapse any range the user drags or shift-selects out.
     useEffect(() => {
         textAreaRef.current?.setSelectionRange(cursorPos, cursorPos);
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -308,13 +226,6 @@ export function Editor({ noteId }: { noteId: string }) {
                 ref={textAreaRef}
                 value={content}
                 onChange={handleInput}
-                onMouseDown={() => {
-                    // freeze any in-flight glide (a scroll to the current
-                    // position cancels it) so it can't move the page while
-                    // the button is down
-                    window.scrollTo({ top: window.scrollY, behavior: 'auto' });
-                    mouseDown.current = true;
-                }}
                 autoFocus
                 rows={1}
                 spellCheck={false}
