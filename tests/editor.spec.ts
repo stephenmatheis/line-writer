@@ -73,10 +73,11 @@ test.describe('typewriter editor', () => {
             await page.keyboard.press('ArrowUp');
         }
 
-        const state = await caretState(page);
-
-        expect(state.spanText).toBe('line number 9\n');
-        expect(Math.abs(state.offCenter)).toBeLessThan(1);
+        // selectionchange is async, so the highlight lands a frame or two
+        // after the keypress - poll for it, then the scroll (applied in the
+        // same layout effect) can be asserted immediately
+        await expect.poll(async () => (await caretState(page)).spanText).toBe('line number 9\n');
+        expect(Math.abs((await caretState(page)).offCenter)).toBeLessThan(1);
     });
 
     test('clicking another line moves the highlight and re-centers', async ({ page }) => {
@@ -94,10 +95,45 @@ test.describe('typewriter editor', () => {
 
         await page.mouse.click(target.x, target.y);
 
-        const state = await caretState(page);
+        expect((await caretState(page)).spanText).toBe('line number 5\n');
 
-        expect(state.spanText).toBe('line number 5\n');
-        expect(Math.abs(state.offCenter)).toBeLessThan(1);
+        // clicks re-center with an animated scroll (keyboard stays instant),
+        // so poll until it settles instead of asserting mid-flight
+        await expect.poll(async () => Math.abs((await caretState(page)).offCenter)).toBeLessThan(1);
+    });
+
+    // Issue #6: re-centering mid-drag scrolled the text out from under the
+    // pointer, making click-and-drag selection nearly unusable
+    test('dragging a selection holds the page still until release', async ({ page }) => {
+        await seedNote(page, TWELVE_LINES);
+
+        const start = await page.evaluate(() => {
+            const textArea = document.querySelector('textarea#editor') as HTMLTextAreaElement;
+            const rect = textArea.getBoundingClientRect();
+            const lineHeight = parseFloat(getComputedStyle(textArea).lineHeight);
+
+            return { x: rect.left + 5, y: rect.top + 7 * lineHeight + lineHeight / 2, lineHeight };
+        });
+        const scrollBefore = await page.evaluate(() => window.scrollY);
+
+        // press on line 8 and drag up to line 6
+        await page.mouse.move(start.x, start.y);
+        await page.mouse.down();
+        await page.mouse.move(start.x + 80, start.y - 2 * start.lineHeight, { steps: 8 });
+
+        expect(await page.evaluate(() => window.scrollY)).toBe(scrollBefore);
+
+        await page.mouse.up();
+
+        // the range survived and the dragged end glides to center
+        const selection = await page.evaluate(() => {
+            const textArea = document.querySelector('textarea#editor') as HTMLTextAreaElement;
+
+            return { start: textArea.selectionStart, end: textArea.selectionEnd };
+        });
+
+        expect(selection.start).toBeLessThan(selection.end);
+        await expect.poll(async () => Math.abs((await caretState(page)).offCenter)).toBeLessThan(1);
     });
 
     test('shift-selecting follows the active end without collapsing', async ({ page }) => {
@@ -115,10 +151,8 @@ test.describe('typewriter editor', () => {
         // the highlight sits on the end being dragged, not the anchor
         expect(selection.start).toBeLessThan(selection.end);
 
-        const state = await caretState(page);
-
-        expect(state.spanText).toBe('line number 11\n');
-        expect(Math.abs(state.offCenter)).toBeLessThan(1);
+        await expect.poll(async () => (await caretState(page)).spanText).toBe('line number 11\n');
+        expect(Math.abs((await caretState(page)).offCenter)).toBeLessThan(1);
     });
 
     test('the textarea grows and shrinks with content', async ({ page }) => {

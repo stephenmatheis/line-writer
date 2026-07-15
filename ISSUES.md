@@ -4,6 +4,124 @@ Running log of bugs found and fixed. Newest first.
 
 ---
 
+## #6 — Re-centering during mouse drags made selection nearly unusable
+
+|               |                                    |
+| ------------- | ---------------------------------- |
+| **Status**    | Closed                             |
+| **Opened**    | 2026-07-14                         |
+| **Closed**    | 2026-07-14                         |
+| **Severity**  | High                               |
+| **Component** | `src/components/editor/editor.tsx` |
+| **Found by**  | User feedback (follow-up to #5)    |
+
+### What happened
+
+After #5, caret updates fired on every `selectionchange` - including each
+step of a mouse drag. The smooth re-center then scrolled the text out
+from under the pointer mid-drag, so click-and-drag selection meant
+aiming at a moving target.
+
+Investigating turned up a second, worse problem hiding underneath: even
+_without_ scrolling, reacting to mid-drag selection changes re-renders
+the overlay and resizes the textarea while WebKit's drag machinery is
+live, which corrupts the selection - the start snapped to 0 on the
+first drag movement (a bare textarea drags fine, so it's our mutations,
+not the browser). In Safari, dragging up two lines selected back to the
+top of the note.
+
+### Fix
+
+New mouse model: **while the button is down, the world holds still.**
+The `selectionchange` listener ignores updates during a mouse gesture
+(and ignores direction-less ranges generally - those are mouse-made and
+resolve at release), so nothing re-renders or scrolls mid-drag. On
+mouseup, one deferred update moves the highlight and glides the caret
+line to center. `mousedown` also freezes any in-flight glide so a
+previous click's animation can't move the page under a new drag.
+
+Which end of a drag-selection to center: `selectionDirection` is
+`'none'` for mouse selections in both Chrome and WebKit, and Chromium
+coalesces away the collapse event on fast drags, so anchor tracking is
+unreliable. Instead the mouseup handler uses the release coordinates -
+the pointer is by definition sitting on the end that moved - and picks
+the selection end whose line is nearest.
+
+Keyboard behavior is untouched: instant re-centering, direction-aware
+via `selectionDirection`, which keyboard selections always report.
+
+### Regression test
+
+`tests/editor.spec.ts` - "dragging a selection holds the page still
+until release" (asserts zero scroll during the drag, the range
+surviving, and the dragged end centered after release, in both
+engines - the WebKit run guards the selection-corruption case).
+
+---
+
+## #5 — Caret-move centering lags behind the caret
+
+|               |                                    |
+| ------------- | ---------------------------------- |
+| **Status**    | Closed                             |
+| **Opened**    | 2026-07-14                         |
+| **Closed**    | 2026-07-14                         |
+| **Severity**  | Medium                             |
+| **Component** | `src/components/editor/editor.tsx` |
+| **Found by**  | User feedback (follow-up to #3)    |
+
+### What happened
+
+After #3 wired caret-only moves into the centering, the caret visibly
+moved and the highlight/scroll caught up noticeably later. Measured in
+the running app: a click didn't re-center until mouse _release_
+(~150ms with a slow click), and worse, an arrow press often didn't
+re-center until the _next_ input event arrived - press again 400ms
+later and that's when the previous move's scroll landed.
+
+### Root cause
+
+React's synthetic `onSelect` was the messenger, and it's the wrong one.
+Its select plugin never receives the native `selectionchange` (that
+event fires at `document` and doesn't bubble through React's root), so
+it can only synthesize `onSelect` while processing some other event it
+does receive - the next keydown, or mouseup (it also deliberately holds
+updates while the mouse button is down). Hence "centering waits for the
+next input".
+
+### Fix
+
+Two parts:
+
+1. Dropped `onSelect` for a native `document.addEventListener('selectionchange')`
+   in the editor's mount effect, guarded by `document.activeElement`
+   being the textarea. It fires as soon as the browser moves the caret.
+   Measured after: arrows re-center in 1-2 frames (~10-17ms, down from
+   "whenever the next input arrives"), clicks start moving at mouse
+   _press_ (down from release).
+2. Clicks now re-center with `behavior: 'smooth'` (a `scrollBehavior`
+   ref flipped in `onMouseDown`, consumed and reset by the scroll
+   effect) so the clicked line glides to center instead of teleporting.
+   Typing and keyboard movement stay instant - that's the typewriter
+   feel, and smooth scrolling can't keep up with held-down arrows.
+
+Verification caught a bonus bug the change exposed: re-centering now
+starts while the mouse button is still down, so the page scrolls out
+from under a click and mouseup lands on a different element - making
+`event.target` an ancestor, so the window click-to-refocus handler
+treated it as an "outside" click. Its `removeAllRanges()` is harmless
+in Chromium but resets the textarea caret to 0 in WebKit - a click
+would throw you to the top of the note in Safari. The handler now bails
+when the textarea is already focused (there's nothing to refocus).
+
+### Regression test
+
+`tests/editor.spec.ts` - the #3 tests now cover this path through the
+native listener; the click test polls for the settle point of the
+animated scroll, and the WebKit run guards the Safari caret-reset.
+
+---
+
 ## #4 — No user feedback when clipboard or share-link import fails
 
 |               |                                                       |
