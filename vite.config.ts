@@ -1,16 +1,13 @@
-import { defineConfig } from 'vite-plus';
+import { defineConfig, lazyPlugins } from 'vite-plus';
 import path from 'path';
 import react from '@vitejs/plugin-react';
+import fmt from './oxfmt.config';
 
 export default defineConfig({
     staged: {
         '*': 'vp check --fix',
     },
-    fmt: {
-        tabWidth: 4,
-        singleQuote: true,
-        printWidth: 120,
-    },
+    fmt,
     lint: {
         plugins: ['oxc', 'typescript', 'unicorn', 'react'],
         categories: {
@@ -171,10 +168,10 @@ export default defineConfig({
         include: ['src/**/*.{test,spec}.{ts,tsx}'],
         passWithNoTests: true,
     },
-    plugins: [react()],
+    plugins: lazyPlugins(() => [react()]),
     resolve: {
         alias: {
-            '@': path.resolve(__dirname, './src'),
+            '@': path.resolve(import.meta.dirname, './src'),
         },
     },
 });
