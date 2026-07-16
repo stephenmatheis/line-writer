@@ -3,19 +3,11 @@ import { noteContent, saveNote } from '@/lib/notes';
 import { useFont } from '@/providers/font-provider';
 import styles from './editor.module.scss';
 
-// One editor edits one note. The app remounts it (key={noteId}) when the
-// active note changes, so all the state below starts over from storage.
 export function Editor({ noteId }: { noteId: string }) {
     const { font, fontSize, lineHeight, width } = useFont();
     const [content, setContent] = useState(noteContent(noteId));
     const [cursorPos, setCursorPos] = useState(content.length);
     const [focusRange, setFocusRange] = useState({ start: 0, end: 0 });
-    // autoFocus calls .focus() with no user gesture behind it. Mobile
-    // Safari won't raise the keyboard for that (expected), but it also
-    // leaves the textarea already focused before the user ever taps it -
-    // and a tap on an already-focused field isn't always a fresh enough
-    // focus transition to raise the keyboard either. Skip it on touch-only
-    // devices so the user's first tap is the real, gesture-backed focus.
     const [hasFinePointer] = useState(() => matchMedia('(pointer: fine)').matches);
     const editorRef = useRef<HTMLDivElement>(null);
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -173,8 +165,9 @@ export function Editor({ noteId }: { noteId: string }) {
             editorRef.current.style.opacity = '1';
         }
 
-        // FIXME: Scrolls on mobile when clicking menu
-        window.addEventListener('pointer', focus);
+        if (!hasFinePointer) return;
+
+        window.addEventListener('click', focus);
 
         function focus(event: Event) {
             // other UI (command palette, future modals) opts out of the
@@ -211,7 +204,7 @@ export function Editor({ noteId }: { noteId: string }) {
         return () => {
             window.removeEventListener('click', focus);
         };
-    }, []);
+    }, [hasFinePointer]);
 
     // Put the caret at the end of the note on mount (autoFocus alone leaves
     // it wherever the browser feels like). Mount-only on purpose: only edits
