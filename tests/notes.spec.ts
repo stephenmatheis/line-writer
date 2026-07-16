@@ -119,4 +119,27 @@ test.describe('notes', () => {
         await expect(page.locator('textarea#editor')).toHaveValue(NOTE);
         expect(await notesIndex(page)).toHaveLength(1);
     });
+
+    // Issue #8: crypto.randomUUID() only works in secure contexts (https, or
+    // localhost) - a first-ever visit over plain http to a LAN IP has no
+    // notes yet, so ensureNotes() -> createNote() used to throw before the
+    // editor ever mounted.
+    test('the first note is created even without crypto.randomUUID', async ({ page }) => {
+        // simulate an insecure context (plain http to a LAN IP), where this
+        // is absent - applies to every navigation from here on, including
+        // the reload below. randomUUID lives on Crypto.prototype, not the
+        // crypto instance, so `delete window.crypto.randomUUID` is a no-op;
+        // shadowing it with an own property is what actually hides it.
+        await page.addInitScript(() => {
+            Object.defineProperty(window.crypto, 'randomUUID', { value: undefined, configurable: true });
+        });
+
+        // beforeEach already seeded one note - clear it so this reload hits
+        // the empty-index -> createNote() path the bug lived in
+        await page.evaluate(() => localStorage.clear());
+        await page.reload();
+
+        await expect(page.locator('textarea#editor')).toBeVisible();
+        expect(await notesIndex(page)).toHaveLength(1);
+    });
 });

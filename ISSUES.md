@@ -4,6 +4,58 @@ Running log of bugs found and fixed. Newest first.
 
 ---
 
+## #8 — App crashed on first load over a LAN IP (mobile testing)
+
+|               |                              |
+| ------------- | ---------------------------- |
+| **Status**    | Closed                       |
+| **Opened**    | 2026-07-15                   |
+| **Closed**    | 2026-07-15                   |
+| **Severity**  | High                         |
+| **Component** | `src/lib/notes.ts`           |
+| **Found by**  | User testing on a real phone |
+
+### What happened
+
+Loading the dev server from a phone over the LAN (`http://192.168.x.x:5173`,
+not `localhost`) showed a permanently blank white page. Looked at first like
+a mobile-specific focus/keyboard bug - tapping the note never brought up the
+on-screen keyboard - but that was a red herring chased for a while (gating
+`autoFocus`, disabling the click-to-refocus handler) before the real cause
+turned up in the console: `crypto.randomUUID is not a function`, thrown from
+`createNote()` during the very first render.
+
+### Root cause
+
+`crypto.randomUUID()` only exists in [secure
+contexts](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts) -
+HTTPS, or the special-cased `localhost`/`127.0.0.1`. Plain HTTP to a LAN IP
+address doesn't qualify, so `crypto.randomUUID` is simply undefined there.
+Every fresh visit to that origin has an empty `notes` index (localStorage is
+per-origin, and `192.168.x.x:5173` is a different origin than
+`localhost:5173`), so `ensureNotes()` always called `createNote()` on that
+device, which always threw - crashing the whole render before the editor
+ever mounted. `localhost`, the iPhone simulator, and Chrome via `localhost`
+all worked fine, which is what made this look device-specific instead of
+context-specific at first.
+
+### Fix
+
+Replaced `crypto.randomUUID()` with a small `randomId()` helper built on
+`crypto.getRandomValues()`, which has no secure-context restriction and
+works identically everywhere. Builds the same UUID v4 shape by hand (version
+and variant bits set manually), so the note ID format is unchanged.
+
+### Regression test
+
+`tests/notes.spec.ts` - "the first note is created even without
+crypto.randomUUID" (shadows `window.crypto.randomUUID` with `undefined` via
+`Object.defineProperty` - it lives on `Crypto.prototype`, not the instance,
+so a plain `delete` is a no-op - then clears storage and reloads to hit the
+empty-index `createNote()` path).
+
+---
+
 ## #7 — Reverted caret-move/drag re-centering from #3 and #6
 
 |               |                                    |

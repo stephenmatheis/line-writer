@@ -16,6 +16,21 @@ export type NoteMeta = {
 const INDEX_KEY = 'notes';
 const ACTIVE_KEY = 'active-note';
 
+// crypto.randomUUID() only works in secure contexts (https, or localhost) -
+// plain http to a LAN IP (testing on a phone over the network) doesn't
+// qualify, so it's undefined there. crypto.getRandomValues() has no such
+// restriction, so build the same UUID v4 shape from that instead.
+function randomId() {
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+    const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
 // a note's name is just whatever its first non-empty line says
 export function titleOf(content: string) {
     const line = content.split('\n').find((candidate) => candidate.trim());
@@ -65,7 +80,7 @@ export function saveNote(id: string, content: string) {
 }
 
 export function createNote(content = ''): string {
-    const id = crypto.randomUUID();
+    const id = randomId();
     const index = listNotes();
 
     index.push({ id, title: titleOf(content), updatedAt: Date.now() });

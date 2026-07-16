@@ -10,6 +10,13 @@ export function Editor({ noteId }: { noteId: string }) {
     const [content, setContent] = useState(noteContent(noteId));
     const [cursorPos, setCursorPos] = useState(content.length);
     const [focusRange, setFocusRange] = useState({ start: 0, end: 0 });
+    // autoFocus calls .focus() with no user gesture behind it. Mobile
+    // Safari won't raise the keyboard for that (expected), but it also
+    // leaves the textarea already focused before the user ever taps it -
+    // and a tap on an already-focused field isn't always a fresh enough
+    // focus transition to raise the keyboard either. Skip it on touch-only
+    // devices so the user's first tap is the real, gesture-backed focus.
+    const [hasFinePointer] = useState(() => matchMedia('(pointer: fine)').matches);
     const editorRef = useRef<HTMLDivElement>(null);
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -167,7 +174,7 @@ export function Editor({ noteId }: { noteId: string }) {
         }
 
         // FIXME: Scrolls on mobile when clicking menu
-        window.addEventListener('click', focus);
+        window.addEventListener('pointer', focus);
 
         function focus(event: Event) {
             // other UI (command palette, future modals) opts out of the
@@ -212,7 +219,6 @@ export function Editor({ noteId }: { noteId: string }) {
     // collapse any range the user drags or shift-selects out.
     useEffect(() => {
         textAreaRef.current?.setSelectionRange(cursorPos, cursorPos);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
@@ -226,7 +232,7 @@ export function Editor({ noteId }: { noteId: string }) {
                 ref={textAreaRef}
                 value={content}
                 onChange={handleInput}
-                autoFocus
+                autoFocus={hasFinePointer}
                 rows={1}
                 spellCheck={false}
                 id="editor"
