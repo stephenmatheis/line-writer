@@ -8,7 +8,6 @@ export function Editor({ noteId }: { noteId: string }) {
     const [content, setContent] = useState(noteContent(noteId));
     const [cursorPos, setCursorPos] = useState(content.length);
     const [focusRange, setFocusRange] = useState({ start: 0, end: 0 });
-    const [hasFinePointer] = useState(() => matchMedia('(pointer: fine)').matches);
     const editorRef = useRef<HTMLDivElement>(null);
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -154,18 +153,12 @@ export function Editor({ noteId }: { noteId: string }) {
         setFocusRange((prev) =>
             prev.start === lineStart && prev.end === lineEnd ? prev : { start: lineStart, end: lineEnd },
         );
-
-        // the typography settings matter here too: changing any of them moves
-        // wrap points, the ch-based width, or the line grid itself, so
-        // everything needs measuring again
     }, [content, cursorPos, font, fontSize, lineHeight, width]);
 
     useEffect(() => {
         if (editorRef.current) {
             editorRef.current.style.opacity = '1';
         }
-
-        if (!hasFinePointer) return;
 
         window.addEventListener('click', focus);
 
@@ -204,12 +197,8 @@ export function Editor({ noteId }: { noteId: string }) {
         return () => {
             window.removeEventListener('click', focus);
         };
-    }, [hasFinePointer]);
+    }, []);
 
-    // Put the caret at the end of the note on mount (autoFocus alone leaves
-    // it wherever the browser feels like). Mount-only on purpose: only edits
-    // update cursorPos after this, and re-running this on every change would
-    // collapse any range the user drags or shift-selects out.
     useEffect(() => {
         textAreaRef.current?.setSelectionRange(cursorPos, cursorPos);
     }, []);
@@ -225,7 +214,7 @@ export function Editor({ noteId }: { noteId: string }) {
                 ref={textAreaRef}
                 value={content}
                 onChange={handleInput}
-                autoFocus={hasFinePointer}
+                autoFocus={true}
                 rows={1}
                 spellCheck={false}
                 id="editor"
