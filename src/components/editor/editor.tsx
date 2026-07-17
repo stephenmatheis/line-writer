@@ -191,16 +191,15 @@ export function Editor({ noteId }: { noteId: string }) {
                 }
             }
 
+            const end = textAreaRef.current?.value.length ?? 0;
+
+            textAreaRef.current?.setSelectionRange(end, end);
             textAreaRef.current?.focus();
         }
 
         return () => {
             window.removeEventListener('click', focus);
         };
-    }, []);
-
-    useEffect(() => {
-        textAreaRef.current?.setSelectionRange(cursorPos, cursorPos);
     }, []);
 
     return (
