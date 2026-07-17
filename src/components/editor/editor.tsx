@@ -162,38 +162,18 @@ export function Editor({ noteId }: { noteId: string }) {
 
         window.addEventListener('click', focus);
 
-        function focus(event: Event) {
-            // other UI (command palette, future modals) opts out of the
-            // always-refocus-the-editor behavior with this attribute. Query
-            // the live DOM instead of walking up from event.target: clicking
-            // a command that swaps the palette's list (drilling into a
-            // sub-menu) makes React detach that row before this handler
-            // runs, so closest() on the stale event.target would miss it
-            // and this would steal focus back from the palette.
-            if (document.querySelector('[data-no-refocus]')) {
-                return;
-            }
+        const end = textAreaRef.current?.value.length ?? 0;
 
-            // Already focused? Then there's nothing to restore - bail before
-            // the removeAllRanges/focus below can do damage. A drag that
-            // ends outside the textarea makes event.target an ancestor, not
-            // the textarea. Without this guard that reads as an "outside"
-            // click and clears the document selection, which in WebKit also
-            // resets the textarea's caret to 0 - throwing you to the top of
-            // the note.
-            if (document.activeElement === textAreaRef.current) {
-                return;
-            }
+        textAreaRef.current?.setSelectionRange(end, end);
+
+        function focus(event: Event) {
+            if (document.querySelector('[data-no-refocus]')) return;
+            if (document.activeElement === textAreaRef.current) return;
 
             if (textAreaRef.current && !textAreaRef.current.contains(event.target as Node)) {
-                if (window.getSelection) {
-                    window.getSelection()?.removeAllRanges();
-                }
+                window.getSelection?.()?.removeAllRanges();
             }
 
-            const end = textAreaRef.current?.value.length ?? 0;
-
-            textAreaRef.current?.setSelectionRange(end, end);
             textAreaRef.current?.focus();
         }
 
