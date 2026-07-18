@@ -30,14 +30,6 @@ export function Editor({ noteId }: { noteId: string }) {
         const lineHeight = parseFloat(cs.lineHeight);
         const mirror = document.createElement('div');
 
-        // clientWidth is spec'd to round to an integer, but the textarea's
-        // actual CSS width (ch-based, so fractional at most font sizes) can
-        // land mid-pixel. Handing the mirror a rounded-down width makes it
-        // wrap one character earlier or later than the real, fractionally-
-        // sized textarea/overlay do - deterministically, on every measure,
-        // not a rendering-jitter thing. getBoundingClientRect keeps the
-        // fraction (there's no border/padding on the textarea for border-box
-        // vs content-box to matter here).
         mirror.style.position = 'absolute';
         mirror.style.visibility = 'hidden';
         mirror.style.boxSizing = 'border-box';
@@ -48,8 +40,6 @@ export function Editor({ noteId }: { noteId: string }) {
         mirror.style.whiteSpace = 'pre-wrap';
         mirror.style.overflowWrap = 'break-word';
 
-        // textarea displays an empty last line if the last char is a newline
-        // add a zero-width space (u200b) to force that line to exist
         const textNode = document.createTextNode(text + '\u200b');
 
         mirror.appendChild(textNode);
@@ -57,16 +47,6 @@ export function Editor({ noteId }: { noteId: string }) {
 
         const range = document.createRange();
 
-        // The browser's own row boxes, not a lineHeight-multiples grid.
-        // getComputedStyle's lineHeight is a rounded string, and dividing an
-        // accumulated pixel offset by that approximation drifts further off
-        // the more lines deep you measure - a few lines in, real font
-        // hinting/antialiasing has pulled far enough from the rounded value
-        // that Math.round tips the wrong way for whichever characters sit
-        // closest to a row boundary (typically the tail end of a line, or a
-        // character straddling a forced mid-word break). Reading the actual
-        // rendered rows once and snapping every character to its nearest one
-        // has no arithmetic to drift.
         range.setStart(textNode, 0);
         range.setEnd(textNode, text.length + 1);
 
@@ -80,8 +60,6 @@ export function Editor({ noteId }: { noteId: string }) {
 
         rowTops.sort((a, b) => a - b);
 
-        // Get visual line of the character at index i. A newline's rect sits at
-        // the end of the line it terminates, which is the line it belongs to.
         function lineOfChar(i: number) {
             range.setStart(textNode, i);
             range.setEnd(textNode, i + 1);
@@ -98,9 +76,6 @@ export function Editor({ noteId }: { noteId: string }) {
             return closest;
         }
 
-        // First index whose character sits on `line` or later. Walking
-        // forward through the text, line numbers only ever go up - so the
-        // string behaves like a sorted list and binary search works.
         function firstCharAtOrAfterLine(line: number) {
             let low = 0;
             let high = text.length;
@@ -118,10 +93,6 @@ export function Editor({ noteId }: { noteId: string }) {
             return low;
         }
 
-        // A caret sits between characters, so which line is it on? The line
-        // of the character just behind it - unless that character is a
-        // newline (Enter was just pressed), which puts the caret on the
-        // fresh line below it.
         const caretLine = caret === 0 ? 0 : lineOfChar(caret - 1) + (text[caret - 1] === '\n' ? 1 : 0);
         const lineStart = firstCharAtOrAfterLine(caretLine);
         const lineEnd = firstCharAtOrAfterLine(caretLine + 1);
